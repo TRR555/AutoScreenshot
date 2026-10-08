@@ -26,7 +26,9 @@ jobs:
         shell: pwsh
         run: |
           git clone --depth 1 https://github.com/bgrabitmap/bgrabitmap.git "$env:RUNNER_TEMP/bgrabitmap"
-          lazbuild --add-package "$env:RUNNER_TEMP/bgrabitmap/bgrabitmap/bgrabitmappack.lpk"
+          lazbuild --add-package-link="$env:RUNNER_TEMP/bgrabitmap/bgrabitmap/bgrabitmappack.lpk"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          lazbuild "$env:RUNNER_TEMP/bgrabitmap/bgrabitmap/bgrabitmappack.lpk"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Compile Windows x64 application
         shell: pwsh
