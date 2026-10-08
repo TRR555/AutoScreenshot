@@ -1,0 +1,41 @@
+name: Build Hebrew AutoScreenshot (Windows)
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'lang/**'
+      - '**.pas'
+      - '**.lpi'
+      - '**.lfm'
+      - '.github/workflows/build-hebrew.yml'
+  workflow_dispatch:
+
+jobs:
+  windows-x64:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout source and public submodules
+        uses: actions/checkout@v4
+      - name: Set up Lazarus
+        uses: gcarreno/setup-lazarus@v3
+        with:
+          lazarus-version: stable
+          include-packages: "BGRABitmap, UniqueInstance, DateTimeCtrls"
+      - name: Compile Windows x64 application
+        shell: pwsh
+        run: |
+          lazbuild --build-mode=Release --cpu=x86_64 AutoScreenshot.lpi
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Prepare portable application
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path portable/lang | Out-Null
+          Copy-Item AutoScreenshot.exe portable/
+          Copy-Item lang/*.ini portable/lang/
+      - name: Upload portable Windows build
+        uses: actions/upload-artifact@v4
+        with:
+          name: AutoScreenshot-Hebrew-Windows-x64
+          path: portable/
+          if-no-files-found: error
