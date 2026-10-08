@@ -50,12 +50,41 @@ jobs:
         run: |
           lazbuild --build-mode=Release --cpu=x86_64 AutoScreenshot.lpi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Prepare portable application
+      - name: Prepare complete portable application
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path portable/lang | Out-Null
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path portable/lang,portable/sounds | Out-Null
           Copy-Item AutoScreenshot.exe portable/
           Copy-Item lang/*.ini portable/lang/
+          Copy-Item sounds/*.wav portable/sounds/
+          Copy-Item LICENSE.txt portable/
+          # DLL sources and architecture match upstream build.xml / setup.iss (Windows x64).
+          $dllNames = @('sqlite3.dll','ssleay32.dll','libeay32.dll','libwebp64.dll','libgcc_s_seh-1.dll','libaom.dll','libavif.dll','libdav1d.dll','libwinpthread-1.dll','rav1e.dll')
+          $depDir = Join-Path $env:RUNNER_TEMP 'autoscreenshot-deps'
+          New-Item -ItemType Directory -Force -Path $depDir | Out-Null
+          function Fetch-Zip($url, $name) {
+            $target = Join-Path $depDir $name
+            Invoke-WebRequest -Uri $url -OutFile $target -MaximumRedirection 10
+            $target
+          }
+          $sqlite = Fetch-Zip 'https://sqlite.org/2024/sqlite-dll-win-x64-3450300.zip' 'sqlite.zip'
+          Expand-Archive -LiteralPath $sqlite -DestinationPath "$depDir/sqlite" -Force
+          $ssl = Fetch-Zip 'https://github.com/IndySockets/OpenSSL-Binaries/raw/refs/heads/master/Archive/openssl-1.0.2j-x64_86-win64.zip' 'openssl.zip'
+          Expand-Archive -LiteralPath $ssl -DestinationPath "$depDir/openssl" -Force
+          Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/bgrabitmap/webp/master/bgrawebp/libwebp64.dll' -OutFile "$depDir/libwebp64.dll"
+          $avif = Fetch-Zip 'https://github.com/bgrabitmap/bgrabitmap/files/8793166/libavifDlls_0.10.1-1.zip' 'avif.zip'
+          Expand-Archive -LiteralPath $avif -DestinationPath "$depDir/avif" -Force
+          foreach ($dll in $dllNames) {
+            $matches = @(Get-ChildItem -LiteralPath $depDir -Recurse -File -Filter $dll)
+            if ($matches.Count -eq 0) { throw "Required upstream DLL not found: $dll" }
+            if ($matches.Count -gt 1) { Write-Host "Multiple sources for $dll; selecting first" }
+            Copy-Item -LiteralPath $matches[0].FullName -Destination (Join-Path 'portable' $dll)
+            if ((Get-Item (Join-Path 'portable' $dll)).Length -lt 1024) { throw "Suspiciously small DLL: $dll" }
+          }
+          if (!(Test-Path 'portable/lang/he.ini')) { throw 'Missing Hebrew translation' }
+          if (@(Get-ChildItem portable/sounds/*.wav).Count -eq 0) { throw 'Missing sound files' }
+          Get-ChildItem portable -Recurse | Select-Object FullName, Length
       - name: Upload portable Windows build
         uses: actions/upload-artifact@v4
         with:
