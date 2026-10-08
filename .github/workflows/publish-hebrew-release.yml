@@ -1,0 +1,60 @@
+name: Publish Hebrew Release
+
+on:
+  workflow_run:
+    workflows: ["Build Hebrew AutoScreenshot (Windows)"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Successful Windows build run ID"
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'master') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get build run
+        id: source
+        env:
+          EVENT_RUN_ID: ${{ github.event.workflow_run.id }}
+          MANUAL_RUN_ID: ${{ inputs.run_id }}
+        run: |
+          echo "run_id=${MANUAL_RUN_ID:-$EVENT_RUN_ID}" >> "$GITHUB_OUTPUT"
+      - name: Download successful Windows build
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BUILD_RUN_ID: ${{ steps.source.outputs.run_id }}
+        run: |
+          mkdir -p dist
+          gh run download "$BUILD_RUN_ID" --name AutoScreenshot-Hebrew-Windows-x64 --dir dist
+          test -s dist/AutoScreenshot.exe
+          test -s dist/lang/he.ini
+          (cd dist && zip -r -q ../AutoScreenshot-v1.22.3-he.1-Windows-x64-portable.zip .)
+          test -s AutoScreenshot-v1.22.3-he.1-Windows-x64-portable.zip
+      - name: Publish tagged release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BUILD_RUN_ID: ${{ steps.source.outputs.run_id }}
+        run: |
+          tag="v1.22.3-he.1"
+          notes="Hebrew localization build of AutoScreenshot 1.22.3.
+
+          Includes the full Hebrew translation file and all distributed language files.
+          Portable Windows x64 build. Extract the ZIP before running AutoScreenshot.exe.
+          The program is based on artem78/AutoScreenshot and remains GPL-3.0 licensed.
+
+          Build source: https://github.com/$GH_REPO/actions/runs/$BUILD_RUN_ID"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" AutoScreenshot-v1.22.3-he.1-Windows-x64-portable.zip --clobber
+          else
+            gh release create "$tag" AutoScreenshot-v1.22.3-he.1-Windows-x64-portable.zip --target master --title "AutoScreenshot 1.22.3 – Hebrew edition" --notes "$notes" --latest
+          fi
