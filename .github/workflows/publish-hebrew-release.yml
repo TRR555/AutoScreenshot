@@ -37,6 +37,11 @@ jobs:
           gh run download "$BUILD_RUN_ID" --name AutoScreenshot-Hebrew-Windows-x64 --dir dist
           test -s dist/AutoScreenshot.exe
           test -s dist/lang/he.ini
+          test -s dist/LICENSE.txt
+          test -n "$(find dist/sounds -maxdepth 1 -name '*.wav' -print -quit)"
+          for dll in sqlite3.dll ssleay32.dll libeay32.dll libwebp64.dll libgcc_s_seh-1.dll libaom.dll libavif.dll libdav1d.dll libwinpthread-1.dll rav1e.dll; do
+            test -s "dist/$dll" || { echo "Missing $dll"; exit 1; }
+          done
           (cd dist && zip -r -q ../AutoScreenshot-v1.22.3-he.1-Windows-x64-portable.zip .)
           test -s AutoScreenshot-v1.22.3-he.1-Windows-x64-portable.zip
       - name: Publish tagged release
@@ -49,7 +54,7 @@ jobs:
           notes="Hebrew localization build of AutoScreenshot 1.22.3.
 
           Includes the full Hebrew translation file and all distributed language files.
-          Portable Windows x64 build. Extract the ZIP before running AutoScreenshot.exe.
+          Complete portable Windows x64 build with the DLL dependencies, sounds, license, and translation files from the upstream packaging definition. Extract the ZIP before running AutoScreenshot.exe.
           The program is based on artem78/AutoScreenshot and remains GPL-3.0 licensed.
 
           Build source: https://github.com/$GH_REPO/actions/runs/$BUILD_RUN_ID"
