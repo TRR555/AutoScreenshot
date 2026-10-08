@@ -17,6 +17,13 @@ jobs:
     steps:
       - name: Checkout source and public submodules
         uses: actions/checkout@v4
+      - name: Restore source submodules
+        shell: pwsh
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git submodule update --init --recursive
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (!(Test-Path 'libs/country-flags/country-flags/gb_16.png')) { throw 'Country flags submodule files missing' }
       - name: Set up Lazarus
         uses: gcarreno/setup-lazarus@v3
         with:
@@ -30,6 +37,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           lazbuild "$env:RUNNER_TEMP/bgrabitmap/bgrabitmap/bgrabitmappack.lpk"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Disable installer-only post-build command in CI
+        shell: pwsh
+        run: |
+          $file = 'AutoScreenshot.lpi'
+          $content = Get-Content -LiteralPath $file -Raw -Encoding UTF8
+          $content = [regex]::Replace($content, '<ExecuteAfter>\s*<Command Value="ant\.bat[^\"]*"/>\s*</ExecuteAfter>', '<ExecuteAfter><Command Value=""/></ExecuteAfter>')
+          Set-Content -LiteralPath $file -Value $content -Encoding UTF8
+          if ($content -match 'ant\.bat') { throw 'ant post-build commands remain' }
       - name: Compile Windows x64 application
         shell: pwsh
         run: |
