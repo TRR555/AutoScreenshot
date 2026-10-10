@@ -651,6 +651,10 @@ const
     ShiftState: [];
     Key: VK_UNKNOWN;
   );
+  DefaultShowWindowHotKey: THotKey = (
+    ShiftState: [ssCtrl, ssAlt, ssShift];
+    Key: VK_S;
+  );
 var
   ///////
   ColorDepthTmp: TColorDepth;
@@ -749,6 +753,12 @@ begin
     KeyHook.RegisterKey('SingleCapture', HotKey);
   except
     KeyHook.RegisterKey('SingleCapture', NoHotKey);
+  end;
+  HotKey := Ini.ReadHotKey(HotKeysIniSection, 'ShowWindow', DefaultShowWindowHotKey);
+  try
+    KeyHook.RegisterKey('ShowWindow', HotKey);
+  except
+    KeyHook.RegisterKey('ShowWindow', NoHotKey);
   end;
 
   {$IfDef Linux}
@@ -1304,7 +1314,7 @@ begin
   //Hide;}
   Hide;
   WindowState := wsMinimized;
-  TrayIcon.Show;
+  //TrayIcon.Show; // tray icon disabled: use the ShowWindow hotkey to restore
 end;
 
 procedure TMainForm.RestoreFromTray;
@@ -2180,6 +2190,7 @@ begin
     'StartAutoCapture': IsTimerEnabled := True;
     'StopAutoCapture':  IsTimerEnabled := False;
     'SingleCapture':    MakeScreenshot;
+    'ShowWindow':       begin RestoreFromTray; Application.BringToFront; end;
     (*{$IFOPT D+}
     else ShowMessage(Format('Unknown hotkey event! (wparam=%d, lparam=%d)', [AMsg.wParam, AMsg.lParam]));
     {$ENDIF}*)
