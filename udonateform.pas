@@ -1,2419 +1,328 @@
-unit uMainForm;
+unit uDonateForm;
 
-{$mode objfpc}{$H+}
+{$mode ObjFPC}{$H+}
 
 interface
 
 uses
-  {$IfDef Windows}
-  Windows, ShellApi,
-  {$EndIf}
-  {$IfDef Linux}
-  xlib, xrandr, XRandREventWatcher,
-  {$EndIf}
-  {Messages,} SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, {ComCtrls,} ExtCtrls, StdCtrls, inifiles, Spin, {FileCtrl,}
-  Menus, Buttons, EditBtn, uLocalization, DateTimePicker, LCLIntf, ComCtrls,
-  ScreenGrabber, uHotKeysForm, uUtilsMore, GlobalKeyHook, OldScreenshotCleaner,
-  UniqueInstance, uplaysound, ZStream { for Tcompressionlevel };
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls;
 
 type
-  TTrayIconState = (tisDefault, tisBlackWhite, tisFlashAnimation, tisUserIdle);
 
-  { TMainForm }
-
-  TMainForm = class(TForm)
-    AutoCheckForUpdatesMenuItem: TMenuItem;
-    EmptyLabel2: TLabel;
-    EmptyLabel3: TLabel;
-    EmptyLabel4: TLabel;
-    EmptyLabel5: TLabel;
-    EmptyLabel6: TLabel;
-    EmptyLabel7: TLabel;
-    EmptyLabel8: TLabel;
-    EmptyLabel9: TLabel;
-    Label1: TLabel;
-    Label2: TLabel;
-    HelpWithTranslationMenuItem: TMenuItem;
-    DebugMenuItem: TMenuItem;
-    EnableLoggingMenuItem: TMenuItem;
-    LocateCfgFileMenuItem: TMenuItem;
-    DonateMenuItem: TMenuItem;
-    OpenCfgFileMenuItem: TMenuItem;
-    OpenLogMenuItem: TMenuItem;
-    LocateLogFileMenuItem: TMenuItem;
-    ReportIssueMenuItem: TMenuItem;
-    Separator1: TMenuItem;
-    SkipSimilarPanel: TPanel;
-    SkipSimilarCheckBox: TCheckBox;
-    FileMenuItem: TMenuItem;
-    ExitMenuItem: TMenuItem;
-    EmptyLabel1: TLabel;
-    MenuImageList: TImageList;
-    LangFlagImageList: TImageList;
-    HomePageMenuItem: TMenuItem;
-    PreCmdLabel: TLabel;
-    PreCmdEdit: TEdit;
-    MinimizeInsteadOfCloseCheckBox: TCheckBox;
-    SettingsPanel: TPanel;
-    OutputDirPanel: TPanel;
-    FileNameTemplatePanel: TPanel;
-    ButtonsPanel: TPanel;
-    PlaySoundsCheckBox: TCheckBox;
-    CompressionLevelComboBox: TComboBox;
-    OldScreenshotCleanerEnabledCheckBox: TCheckBox;
-    HotKetsSettingsMenuItem: TMenuItem;
-    CompressionLevelLabel: TLabel;
-    ImageFormatOptionsPanel: TPanel;
-    OldScreenshotCleanerPanel: TPanel;
-    OldScreenshotCleanerMaxAgeUnitComboBox: TComboBox;
-    OldScreenshotCleanerMaxAgeValueSpinEdit: TSpinEdit;
-    SoundPlayer: Tplaysound;
-    PostCmdLabel: TLabel;
-    PostCmdEdit: TEdit;
-    CheckForUpdatesMenuItem: TMenuItem;
-    OutputDirEdit: TDirectoryEdit;
-    SkipSimilarMatchPercentSpinEdit: TSpinEdit;
-    OutputDirLabel: TLabel;
-    CaptureIntervalLabel: TLabel;
-    AutoCaptureUpdaterTimer: TTimer;
-    StatusBar1: TStatusBar;
-    UpdateCheckOnStartupTimer: TTimer;
-    TrayIcon: TTrayIcon;
-    ImageFormatLabel: TLabel;
-    TakeScreenshotButton: TButton;
-    JPEGQualityLabel: TLabel;
-    JPEGQualitySpinEdit: TSpinEdit;
-    OpenOutputDirButton: TButton;
-    StopWhenInactiveCheckBox: TCheckBox;
-    ImageFormatComboBox: TComboBox;
-    JPEGQualityPercentLabel: TLabel;
-    AutoCaptureControlGroup: TGroupBox;
-    StartAutoCaptureButton: TBitBtn;
-    StopAutoCaptureButton: TBitBtn;
-    TrayIconPopupMenu: TPopupMenu;
-    ExitTrayMenuItem: TMenuItem;
-    TakeScreenshotTrayMenuItem: TMenuItem;
-    RestoreWindowTrayMenuItem: TMenuItem;
-    ToggleAutoCaptureTrayMenuItem: TMenuItem;
-    Separator2TrayMenuItem: TMenuItem;
-    StartCaptureOnStartUpCheckBox: TCheckBox;
-    StartMinimizedCheckBox: TCheckBox;
-    Separator1TrayMenuItem: TMenuItem;
-    FileNameTemplateLabel: TLabel;
-    FileNameTemplateComboBox: TComboBox;
-    FileNameTemplateHelpButton: TButton;
-    GrayscaleCheckBox: TCheckBox;
-    ColorDepthLabel: TLabel;
-    ColorDepthComboBox: TComboBox;
-    CaptureIntervalDateTimePicker: TDateTimePicker;
-    TrayIconAnimationTimer: TTimer;
-    AutoRunCheckBox: TCheckBox;
-    MonitorLabel: TLabel;
-    MonitorComboBox: TComboBox;
-    MainMenu: TMainMenu;
-    HelpSubMenu: TMenuItem;
-    AboutMenuItem: TMenuItem;
-    OptionsSubMenu: TMenuItem;
-    LanguageSubMenu: TMenuItem;
-    SeqNumberGroup: TGroupBox;
-    SeqNumberValueLabel: TLabel;
-    SeqNumberValueSpinEdit: TSpinEdit;
-    SeqNumberDigitsCountSpinEdit: TSpinEdit;
-    SeqNumberDigitsCountLabel: TLabel;
-    UniqueInstance1: TUniqueInstance;
-    procedure AutoCaptureUpdaterTimerTimer(Sender: TObject);
-    procedure CheckForUpdatesMenuItemClick(Sender: TObject);
-    procedure AutoCheckForUpdatesMenuItemClick(Sender: TObject);
-    procedure CompressionLevelComboBoxChange(Sender: TObject);
-    procedure EnableLoggingMenuItemClick(Sender: TObject);
-    procedure ExitMenuItemClick(Sender: TObject);
-    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure HelpWithTranslationMenuItemClick(Sender: TObject);
-    procedure HomePageMenuItemClick(Sender: TObject);
-    procedure LocateCfgFileMenuItemClick(Sender: TObject);
-    procedure LocateLogFileMenuItemClick(Sender: TObject);
-    procedure DonateMenuItemClick(Sender: TObject);
-    procedure OpenCfgFileMenuItemClick(Sender: TObject);
-    procedure OpenLogMenuItemClick(Sender: TObject);
-    procedure OpenLogMenuItemOldClick(Sender: TObject);
-    procedure ReportIssueMenuItemClick(Sender: TObject);
-    procedure SkipSimilarCheckBoxChange(Sender: TObject);
-    procedure MinimizeInsteadOfCloseCheckBoxChange(Sender: TObject);
-    procedure OldScreenshotCleanerEnabledCheckBoxChange(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
-    procedure HotKetsSettingsMenuItemClick(Sender: TObject);
-    procedure OldScreenshotCleanerMaxAgeUnitComboBoxChange(Sender: TObject);
-    procedure OldScreenshotCleanerMaxAgeValueSpinEditChange(Sender: TObject);
-    procedure OutputDirEditChange(Sender: TObject);
-    procedure CaptureIntervalDateTimePickerChange(Sender: TObject);
-    procedure PlaySoundsCheckBoxChange(Sender: TObject);
-    procedure PostCmdEditChange(Sender: TObject);
-    procedure PreCmdEditChange(Sender: TObject);
-    procedure SkipSimilarMatchPercentSpinEditChange(Sender: TObject);
-    procedure TimerTimer(Sender: TObject);
-    procedure ApplicationMinimize(Sender: TObject);
-    procedure StartAutoCaptureButtonClick(Sender: TObject);
-    procedure StopAutoCaptureButtonClick(Sender: TObject);
-    procedure TakeScreenshotButtonClick(Sender: TObject);
-    procedure JPEGQualitySpinEditChange(Sender: TObject);
-    procedure OpenOutputDirButtonClick(Sender: TObject);
-    procedure StopWhenInactiveCheckBoxClick(Sender: TObject);
-    procedure ImageFormatComboBoxChange(Sender: TObject);
-    procedure ToggleAutoCaptureTrayMenuItemClick(Sender: TObject);
-    procedure RestoreWindowTrayMenuItemClick(Sender: TObject);
-    procedure TakeScreenshotTrayMenuItemClick(Sender: TObject);
-    procedure ExitTrayMenuItemClick(Sender: TObject);
-    procedure StartCaptureOnStartUpCheckBoxClick(Sender: TObject);
-    procedure StartMinimizedCheckBoxClick(Sender: TObject);
-    procedure FileNameTemplateComboBoxChange(Sender: TObject);
-    procedure FileNameTemplateHelpButtonClick(Sender: TObject);
-    procedure GrayscaleCheckBoxClick(Sender: TObject);
-    procedure ColorDepthComboBoxChange(Sender: TObject);
-    procedure TrayIconAnimationTimerTimer(Sender: TObject);
-    procedure AutoRunCheckBoxClick(Sender: TObject);
-    procedure MonitorComboBoxChange(Sender: TObject);
-    procedure AboutMenuItemClick(Sender: TObject);
-    procedure TrayIconDblClick(Sender: TObject);
-    procedure SeqNumberValueSpinEditChange(Sender: TObject);
-    procedure SeqNumberDigitsCountSpinEditChange(Sender: TObject);
-    procedure UniqueInstance1OtherInstance(Sender: TObject;
-      ParamCount: Integer; const Parameters: array of String);
-    procedure UpdateCheckOnStartupTimerTimer(Sender: TObject);
-  private
-    { Private declarations }
-
-    { Fields and variables }
-    AvailableLanguages: TLanguagesArray;
-    FLanguage: TLanguageCode;  { ??? }
-    FColorDepth: TColorDepth;
-    FTrayIconState: TTrayIconState;
-
-    TrayIconIdx: 1..7;
-
-    FCounter: Integer;
-    FCounterDigits: Integer {Byte};
-
-    {$IfDef Windows}
-    PrevWndProc: WndProc;
-    {$EndIf}
-    {$IfDef Linux}
-    XWatcher: TXRandREventWatcherThread;
-    {$EndIf}
-    Grabber: TScreenGrabber;
-
-    FStopWhenInactive: Boolean;
-    FStartMinimized: Boolean;
-    FAutoRun: Boolean;
-    FGrayscale: Boolean;
-
-    KeyHook: TGlobalKeyHook;
-    OldScreenshotCleaner: TOldScreenshotCleaner;
-    FormInitialized: Boolean;
-    function GetEnableLogging: Boolean;
-
-    public
-    FileJournal: TFileJournal;
-    private
-
-    AutoCaptureTimer: TTimerV2;
-    
-    { Methods }
-    procedure SetTimerEnabled(AEnabled: Boolean);
-    function GetTimerEnabled: Boolean;
-    function GetFinalOutputDir: String;
-    function GetImagePath: String;
-    procedure SetImageFormatByStr(FmtStr: String);
-    procedure SetImageFormat(Fmt: TImageFormat);
-    function GetImageFormat: TImageFormat;
-    procedure SetColorDepth(AColorDepth: TColorDepth);
-    function GetColorDepth: TColorDepth;
-    procedure SetTrayIconState(IconState: TTrayIconState);
-    procedure MakeScreenshot;
-    procedure MinimizeToTray;
-    procedure RestoreFromTray;
-    //procedure SetLanguage(Lang: TLanguage);
-    procedure SetLanguageByCode(LangCode: TLanguageCode);
-    procedure TranslateForm;
-    procedure InitUI;
-    procedure ReadSettings;
-    procedure UpdateColorDepthValues;
-    procedure UpdateMonitorList;
-    procedure FillMonitorList;
-    procedure SetMonitorId(MonitorId: Integer);
-    function GetMonitorId: Integer;
-    procedure UpdateLanguages;
-    procedure LanguageClick(Sender: TObject);
-    function GetLangCodeOfLangMenuItem(const LangItem: TMenuItem): TLanguageCode;
-    function FindLangMenuItem(ALangCode: TLanguageCode): TMenuItem;
-    function FormatPath(Str: string): string;
-    procedure SetCounter(Val: Integer);
-    procedure SetCounterDigits(Val: Integer);
-    procedure UpdateSeqNumGroupVisibility;
-    procedure SetJPEGQuality(Val: Integer);
-    function GetJPEGQuality: Integer;
-    procedure SetStopWhenInactive(const Val: Boolean);
-    procedure SetStartMinimized(const Val: Boolean);
-    procedure SetAutoRun(const Val: Boolean);
-    procedure SetGrayscale(const Val: Boolean);
-    procedure SetPostCommand(ACmd: String);
-    function GetPostCommand: String;
-    function GetMonitorWithCursor: Integer;
-    function GetAutoCheckForUpdates: Boolean;
-    procedure SetAutoCheckForUpdates(AVal: Boolean);
-    procedure SetStartAutoCaptureHotKey(AHotKey: THotKey);
-    procedure SetStopAutoCaptureHotKey(AHotKey: THotKey);
-    procedure SetSingleCaptureHotKey(AHotKey: THotKey);
-    procedure SetHotKey(AHotKeyId: String; AHotKey: THotKey);
-    procedure SetCompressionLevel(ALevel: Tcompressionlevel);
-    function GetCompressionLevel: Tcompressionlevel;
-    procedure UpdateFormAutoSize;
-    procedure PlaySound(const AFileName: String);
-    procedure SetSounds(AEnabled: Boolean);
-    function GetSounds: Boolean;
-    procedure SetMinimizeInsteadOfClose(AEnabled: Boolean);
-    function GetMinimizeInsteadOfClose: Boolean;
-    function ConfirmExit: Boolean;
-    procedure SetEnableLogging(AEnabled: boolean);
-    function GetEnabledLogging:boolean;
-
-    procedure OnHotKeyEvent(const AHotKeyId: String);
-    procedure OnDebugLnEvent(Sender: TObject; S: string; var Handled: Boolean);
-    function OnHotKeysSaving(ASender: TObject; out AErrorMsg: string): Boolean;
-    procedure OnScreenshotCleanerChanged;
-
-    {$IfDef Linux}
-    procedure OnScreenConfigurationChanged(const AEvent: TXEvent);
-    {$EndIf}
-
-    procedure SetPreCommand(ACmd: String);
-    function GetPreCommand: String;
-    procedure SetSkipSimilar(AVal: Boolean);
-    function GetSkipSimilar: Boolean;
-    procedure SetSkipSimilarMatchPercent(AVal: Integer);
-    function GetSkipSimilarMatchPercent: Integer;
-
-    procedure UpdateStatusBarAndTrayIconText;
-    procedure ShowNotificationInStatusBar(AMsg: string);
-
-    function LogFilePath: string;
-    function CfgFilePath:string;
-
-
-    { Properties }
-    property IsTimerEnabled: Boolean read GetTimerEnabled write SetTimerEnabled;
-    property FinalOutputDir: String read GetFinalOutputDir;
-    property ImagePath: String read GetImagePath;
-    //property Language: TLanguage read FLanguage write SetLanguage;
-    property ImageFormat: TImageFormat read GetImageFormat write SetImageFormat;
-    property ColorDepth: TColorDepth read GetColorDepth write SetColorDepth;
-    property TrayIconState: TTrayIconState write SetTrayIconState;
-    property MonitorId: Integer read GetMonitorId write SetMonitorId;
-    property Counter: Integer read FCounter write SetCounter;
-    property CounterDigits: {Byte} Integer read FCounterDigits write SetCounterDigits;
-    property JPEGQuality: Integer read GetJPEGQuality write SetJPEGQuality;
-    property StopWhenInactive: Boolean read FStopWhenInactive write SetStopWhenInactive;
-    property StartMinimized: Boolean read FStartMinimized write SetStartMinimized;
-    property AutoRun: Boolean read FAutoRun write SetAutoRun;
-    property Grayscale: Boolean read FGrayscale write SetGrayscale;
-    property PostCommand: String read GetPostCommand write SetPostCommand;
-    property AutoCheckForUpdates: Boolean read GetAutoCheckForUpdates write SetAutoCheckForUpdates;
-    property CompressionLevel: Tcompressionlevel read GetCompressionLevel write SetCompressionLevel;
-    property Sounds: Boolean read GetSounds write SetSounds;
-    property MinimizeInsteadOfClose: Boolean read GetMinimizeInsteadOfClose write SetMinimizeInsteadOfClose;
-    property PreCommand: String read GetPreCommand write SetPreCommand;
-    property SkipSimilar: Boolean read GetSkipSimilar write SetSkipSimilar;
-    property SkipSimilarMatchPercent: Integer read GetSkipSimilarMatchPercent
-                                         write SetSkipSimilarMatchPercent;
-    property EnableLogging: Boolean read GetEnableLogging write SetEnableLogging;
-
-    // Messages
-    {$IfDef Windows}
-    procedure WMHotKey(var AMsg: TMessage); message WM_HOTKEY;
-    {$EndIf}
-  public
-    { Public declarations }
+  TDonateEntry = record
+    Title, WalletID, IconBase64, Url: String;
   end;
 
-const
-  DefaultConfigIniSection = 'main';
-  HotKeysIniSection = 'hotkeys';
+  { TDonateForm }
 
-  MinCaptureIntervalInSeconds = 1;
-  NoMonitorId = -1;
-  MonitorWithCursor = -2;
-  MinCounterValue  = 1;
-  MinCounterDigits = 1;
-  MaxCounterDigits = 10;
-  UpdateCheckIntervalInSeconds = 3 * 24 * 60 * 60; // Every 3 days
-  MinOldScreenshotsRemovingPeriodValue = 1;
-  MaxOldScreenshotsRemovingPeriodValue = 999;
+  TDonateForm = class(TForm)
+    DonateInfoLabel: TLabel;
+    PaymentMethodsPanel: TPanel;
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+  private
+    Entries: array of TDonateEntry;
+    procedure CopyWalletToClipboard(ASender: TObject);
+    procedure LoadData();
+    class procedure OpenWebPage; static;
+    procedure OpenDonateUrl(ASender: TObject);
+  public
+
+  end;
 
 var
-  MainForm: TMainForm;
-  Ini: TIniFile;
+  DonateForm: TDonateForm;
 
 implementation
 
-uses uAbout, DateUtils, StrUtils, uUtils, Math,
-  uFileNameTemplateHelpForm, uIniHelper, UpdateChecker, FileUtil, LCLType, Idle,
-  uDonateForm, LazLogger;
+uses Clipbrd, LCLIntf, uLocalization, uUtils, fpjson,
+  opensslsockets, base64, StrUtils, fphttpclient, Buttons;
 
 {$R *.lfm}
 
-const
-  LanguageSubMenuItemNamePrefix = 'LanguageSubMenuItem_';
+type
 
-{$IfDef Windows}
-function WndCallback(MyHWND: HWND; uMSG: UINT; wParam: WParam; lParam: LParam): LRESULT; StdCall;
-begin
-  case uMSG of
-    WM_DISPLAYCHANGE, // Screen resolution/orientation changed
-    WM_DEVICECHANGE:  // Any hardware configuration changed (including monitors)
-      begin
-        MainForm.UpdateMonitorList;
-      end;
+  { TPictureHelper }
+
+  TPictureHelper = class helper for TPicture
+    procedure LoadFromBase64(const AStr: String);
   end;
 
-  //if WindowInfo^.WinControl is TForm1 then //Eliminate form1 global variable for safer handling.
-  //  Result:= CallWindowProc(TForm1(WindowInfo^.WinControl).PrevWndProc, MyHWND, uMSG, WParam, LParam);
+{ TPictureHelper }
 
-  Result := Windows.CallWindowProc(MainForm.PrevWndProc, MyHWND, uMsg, WParam, LParam);
-end;
-{$EndIf}
-
-function MyGetApplicationName: String;
-begin
-  Result := 'AutoScreenshot';
-end;
-
-procedure TMainForm.InitUI;
-var
-  Fmt: TImageFormat;
-  I: Integer;
-begin
-  MainForm.Caption := MainForm.Caption + ' v' + GetProgramVersionStr;
-  {$IFOPT D+}
-    MainForm.Caption := MainForm.Caption + '    [DEBUG BUILD]';
-  {$ENDIF}
-
-  // Set default tray icon
-  TrayIconState := tisDefault;
-  TrayIcon.Hint := Application.Title;
-
-  // Fill combobox with image formats
-  for Fmt in TImageFormat do
-    ImageFormatComboBox.Items.Append(ImageFormatInfoArray[Fmt].Name);
-  ImageFormatComboBox.AutoWidth;
-
-  // Set min/max values for JPEG quality
-  JPEGQualitySpinEdit.MinValue := Low(TJPEGQualityRange);
-  JPEGQualitySpinEdit.MaxValue := High(TJPEGQualityRange);
-
-  // Icons
-  StartAutoCaptureButton.Glyph.LoadFromResourceName(HInstance, '_START_ICON');
-  StopAutoCaptureButton.Glyph.LoadFromResourceName(HInstance, '_STOP_ICON');
-
-  // Available languages
-  UpdateLanguages;
-
-  // Sequential number
-  SeqNumberValueSpinEdit.MinValue := MinCounterValue;
-  SeqNumberDigitsCountSpinEdit.MinValue := MinCounterDigits;
-  SeqNumberDigitsCountSpinEdit.MaxValue := MaxCounterDigits;
-
-  // Available monitors
-  UpdateMonitorList;
-
-  // Predefined filename templates
-  with FileNameTemplateComboBox.Items do
-  begin
-    Clear;
-    Append('screenshot %Y-%M-%D %H-%N-%S');
-    Append('%Y' + PathDelim + '%M' + PathDelim + '%D' + PathDelim + 'screenshot %H-%N-%S');
-    Append('%Y-%M' + PathDelim + '%D' + PathDelim + 'screenshot %H-%N-%S');
-    Append('%COMP' + PathDelim + '%USER' + PathDelim + 'screenshot %Y-%M-%D %H-%N-%S');
-    Append('screenshot %NUM');
-  end;
-
-  with OldScreenshotCleanerMaxAgeValueSpinEdit do
-  begin
-    MinValue := MinOldScreenshotsRemovingPeriodValue;
-    MaxValue := MaxOldScreenshotsRemovingPeriodValue;
-  end;
-
-  with OldScreenshotCleanerMaxAgeUnitComboBox.Items do
-  begin
-    Clear;
-    for I := Ord(Low(TIntervalUnit)) to Ord(High(TIntervalUnit)) do
-      Append('');
-  end;
-
-  // Fix incorrect order for statusbar and panel with buttons
-  // https://wiki.lazarus.freepascal.org/Autosize_/_Layout#Order_of_controls_with_same_Align
-  ButtonsPanel.Top:=0;
-  StatusBar1.Top:=999;
-
-  { Change focus from OuputDirEdit (first control) to any other control
-    to prevent directory name be moved and truncated
-    https://github.com/artem78/AutoScreenshot/issues/67 }
-  ActiveControl:=AutoCaptureControlGroup;
-end;
-
-procedure TMainForm.ReadSettings;
-const
-  DefaultFileNameTemplate = '%Y-%M-%D' + PathDelim + '%Y-%M-%D %H.%N.%S';
-  DefaultCaptureInterval  = 5;
-  DefaultImageFormat      = fmtPNG;
-  DefaultJPEGQuality      = 80;
-  DefaultLanguage         = 'en';
-  DefaultColorDepth       = cd24Bit;
-  DefaultMonitorId        = NoMonitorId;
-  DefaultCounterValue     = MinCounterValue;
-  DefaultCounterDigits    = 6;
-  DefaultCompressionLevel = cldefault;
-  DefaultScreenshotCleanerMaxAge: TInterval = (
-    Val: 1;
-    &Unit: iuMonths
-  );
-  DefaultSkipSimilarMatchPercent = {95} 100;
-var
-  DefaultOutputDir, BaseDir: String;
-  CfgLang, SysLang, AltLang: TLanguageCode;
-  FmtStr: String;
-  Seconds: Integer;
-  CleanerActive: Boolean;
-  DT: TDate;
-begin
-  // Логи
-  EnableLogging:=ini.ReadBool(DefaultConfigIniSection,'Logging', false);
-  if EnableLogging then
-  begin
-    DeleteFile(LogFilePath); // Overwrite log file
-    DebugLogger.LogName := LogFilePath;
-    //{$Define LAZLOGGER_FLUSH}
-    DebugLogger.CloseLogFileBetweenWrites := True; // FixMe: Better to set LAZLOGGER_FLUSH, but seems it doesn't work
-    DebugLogger.OnDebugLn := @OnDebugLnEvent;
-  end
-  else
-  begin
-    {$IFOPT D-}
-    DebugLogger.LogName :=
-                 {$IfDef Windows}'nul'{$EndIf}
-                 {$IfDef Linux}'/dev/null'{$ENDIF}
-    ;
-    {$EndIf}
-  end;
-
-  if IsPortable then
-    BaseDir := ExtractFilePath(Application.ExeName)
-  else
-    BaseDir := GetUserPicturesDir();
-  DefaultOutputDir := IncludeTrailingPathDelimiter(ConcatPaths([BaseDir, 'screenshots']));
-  OutputDirEdit.Text := Ini.ReadString(DefaultConfigIniSection, 'OutputDir', DefaultOutputDir);
-  // ToDo: Check that directory exists or can be created (with subdirs if needed)
-  if OutputDirEdit.Text = '' then
-    OutputDirEdit.Text := DefaultOutputDir;
-
-  FileNameTemplateComboBox.Text := Ini.ReadString(DefaultConfigIniSection, 'FileNameTemplate', DefaultFileNameTemplate);
-
-  Seconds := Round(Ini.ReadFloat(DefaultConfigIniSection, 'CaptureInterval', DefaultCaptureInterval) * SecsPerMin);
-  Seconds := Max(Seconds, MinCaptureIntervalInSeconds);
-  CaptureIntervalDateTimePicker.Time := EncodeTime(0, 0, 0, 0);
-  CaptureIntervalDateTimePicker.Time := IncSecond(CaptureIntervalDateTimePicker.Time, Seconds);
-
-  StopWhenInactive := Ini.ReadBool(DefaultConfigIniSection, 'StopWhenInactive', False);
-
-  // Image format
-  FColorDepth := TColorDepth(0); // Set value as unitialized to prevent
-        // reset to max available value in UpdateColorDepthValues() before
-        // reading color depth from ini file
-  FmtStr := Ini.ReadString(DefaultConfigIniSection, 'ImageFormat',
-      ImageFormatInfoArray[DefaultImageFormat].Name);
-  try
-    SetImageFormatByStr(FmtStr);
-  except
-    ImageFormat := DefaultImageFormat;
-  end;
-
-  JPEGQuality := Ini.ReadInteger(DefaultConfigIniSection, 'JPEGQuality', DefaultJPEGQuality);
-
-  Grayscale := Ini.ReadBool(DefaultConfigIniSection, 'Grayscale', False);
-
-  // Color depth
-  try
-    ColorDepth := TColorDepth(Ini.ReadInteger(DefaultConfigIniSection,
-        'ColorDepth', Integer(DefaultColorDepth)));
-  except
-    FColorDepth := DefaultColorDepth;
-  end;
-
-  // Language
-  try
-    CfgLang := Ini.ReadString(DefaultConfigIniSection, 'Language', '');
-    SetLanguageByCode(CfgLang);
-  except
-    try
-      SysLang := GetSystemLanguageCode;
-      SetLanguageByCode(SysLang);
-    except
-      try
-        AltLang := GetAlternativeLanguage(AvailableLanguages, SysLang);
-        SetLanguageByCode(AltLang);
-      except
-        SetLanguageByCode(DefaultLanguage);
-      end;
-    end;
-  end;
-
-  // Start autocapture
-  AutoCaptureTimer.Interval := SecondOfTheDay(CaptureIntervalDateTimePicker.Time) * MSecsPerSec;
-  StartCaptureOnStartUpCheckBox.Checked :=
-      Ini.ReadBool(DefaultConfigIniSection, 'StartCaptureOnStartUp', {True} False);
-  IsTimerEnabled := StartCaptureOnStartUpCheckBox.Checked;
-
-  // Start with OS
-  AutoRun := Ini.ReadBool(DefaultConfigIniSection, 'AutoRun', False);
-  
-  // Start minimized
-  StartMinimized := Ini.ReadBool(DefaultConfigIniSection, 'StartMinimized', False);
-  if StartMinimized then
-    MinimizeToTray
-  else
-    RestoreFromTray;
-
-  // Multiple monitors
-  try
-    MonitorId := Ini.ReadInteger(DefaultConfigIniSection, 'Monitor', DefaultMonitorId);
-  except
-    MonitorId := DefaultMonitorId;
-  end;
-
-  // Incremental counter
-  Counter := Ini.ReadInteger(DefaultConfigIniSection, 'Counter', DefaultCounterValue);
-  CounterDigits := Ini.ReadInteger(DefaultConfigIniSection, 'CounterDigits', DefaultCounterDigits);
-  UpdateSeqNumGroupVisibility;
-
-  // User command
-  PreCommand := Ini.ReadString(DefaultConfigIniSection, 'PreCmd', '');
-  PostCommand := Ini.ReadString(DefaultConfigIniSection, 'PostCmd', '');
-
-  // Auto checking for updates
-  AutoCheckForUpdates := Ini.ReadBool(DefaultConfigIniSection, 'AutoCheckForUpdates', True);
-
-  // Compression level
-  CompressionLevel := Tcompressionlevel(Ini.ReadInteger(DefaultConfigIniSection, 'Compression', Ord(DefaultCompressionLevel)));
-
-  // Old screenshots removing
-  CleanerActive := Ini.ReadBool(DefaultConfigIniSection,
-                                'OldScreenshotCleanerEnabled', False);
-  OldScreenshotCleaner.MaxAge := TInterval(Ini.ReadString(DefaultConfigIniSection,
-                                             'OldScreenshotCleanerMaxAge',
-                                             String(DefaultScreenshotCleanerMaxAge)));
-  OldScreenshotCleaner.Active := CleanerActive;
-
-  // Sounds
-  Sounds := Ini.ReadBool(DefaultConfigIniSection, 'Sounds', False);
-
-  // Minimize instead of close
-  MinimizeInsteadOfClose := Ini.ReadBool(DefaultConfigIniSection, 'MinimizeInsteadOfClose', False);
-
-  // Ignore similar screenshots
-  SkipSimilar := ini.ReadBool(DefaultConfigIniSection, 'SkipSimilar', False);
-  SkipSimilarMatchPercent := ini.ReadInteger(DefaultConfigIniSection,
-               'SkipSimilarMatchPercent', DefaultSkipSimilarMatchPercent);
-end;
-
-procedure TMainForm.FormCreate(Sender: TObject);
-  procedure DebugMonitors;
+procedure TPictureHelper.LoadFromBase64(const AStr: String);
+  function Base64ToStream(const ABase64: String; var AStream: TMemoryStream): Boolean;
   var
-    I:integer;
+    Str: String;
   begin
-    DebugLn('Monitor count: ', inttostr(screen.MonitorCount));
-    DebugLn('Monitors list:');
-    DebugLnEnter();
-    for i := 0 to screen.MonitorCount -1 do
-    begin
-      DebugLnEnter('- Monitor #%d %dx%dpx %s', [i,
-               Screen.Monitors[i].width, Screen.Monitors[i].height,
-               BoolToStr(Screen.Monitors[i].Primary, 'primary', '')]);
-      DebugLn('BoundsRect=', DbgS(Screen.Monitors[i].BoundsRect));
-      DebugLn('WorkareaRect=', DbgS(Screen.Monitors[i].WorkareaRect));
-      DebugLn('PixelsPerInch=%d', [Screen.Monitors[i].PixelsPerInch]);
-      DebugLnExit();
-    end;
-    DebugLnExit();
-  end;
-
-const
-  NoHotKey: THotKey = (
-    ShiftState: [];
-    Key: VK_UNKNOWN;
-  );
-  DefaultShowWindowHotKey: THotKey = (
-    ShiftState: [ssCtrl, ssAlt, ssShift];
-    Key: VK_S;
-  );
-var
-  ///////
-  ColorDepthTmp: TColorDepth;
-  ////////
-  LastUpdateCheck: TDateTime;
-  HotKey: THotKey;
-  IniFileName: String;
-begin
-  AutoCaptureTimer := TTimerV2.Create(Self);
-  AutoCaptureTimer.Enabled:=False;
-  AutoCaptureTimer.OnTimer:=@TimerTimer;
-
-  {DebugLn('Program started');
-  DebugLn('Version: ', GetProgramVersionStr);
-  DebugLn('Initializing...');}
-
-  {$IfDef Windows}
-  { Replace default window function with custom one
-    for process messages when screen configuration changed }
-  PrevWndProc := Windows.WNDPROC
-    (SetWindowLongPtr(Self.Handle, GWL_WNDPROC {GWLP_WNDPROC}, PtrUInt(@WndCallback)));
-  {$EndIf}
-
-  Application.OnMinimize := @ApplicationMinimize;
-
-  InitUI;
-
-  OnGetApplicationName := @MyGetApplicationName;
-  if IsPortable then
-    IniFileName := ConcatPaths([ProgramDirectory, 'config.ini'])
-  else
-    IniFileName := ConcatPaths([GetAppConfigDir(False), 'config.ini']);
-  Ini := TIniFile.Create(IniFileName);
-  Ini.WriteString(DefaultConfigIniSection, 'ProgramVersion', GetProgramVersionStr);
-
-  OldScreenshotCleaner := TOldScreenshotCleaner.Create;
-  OldScreenshotCleaner.OnChangeCallback := @OnScreenshotCleanerChanged;
-
-  ReadSettings;
-
-  DebugLn('Program started at ', DateTimeToStr(Now));
-  DebugLn('Version: ', GetProgramVersionStr);
-  debugln('type:',ifthen(IsPortable,'portable','installed')) ;
-  DebugLn('OS:', OSInfo);
-  DebugMonitors();
-  debugln();
-  DebugLn('Initializing...');
-
-  //if FindCmdLineSwitch('autorun') then
-  //  OutputDebugString('AutoRun');
-
-  //////////////
-  ColorDepthTmp := cd24Bit; // Any value
-  try
-    ColorDepthTmp := ColorDepth;
-  except
-  end;
-  ///////////////
-  Grabber := TScreenGrabber.Create(ImageFormat, {ColorDepth} ColorDepthTmp, JPEGQuality,
-    Grayscale, CompressionLevel);
-  
-  // Check for updates when program starts
-  LastUpdateCheck := Ini.ReadDateTime(DefaultConfigIniSection, 'LastCheckForUpdates', 0);
-  if AutoCheckForUpdates then
-  begin
-    DebugLn('Last update check: %s (%d hours ago)', [DateTimeToStr(LastUpdateCheck), HoursBetween(Now, LastUpdateCheck)]);
-  end;
-  if AutoCheckForUpdates and (SecondsBetween(Now, LastUpdateCheck) > UpdateCheckIntervalInSeconds) then
-  //  CheckForUpdates(True);
-  begin
-    // без этой хуйни при запуске программы вместе с системой часто пояляются ебанутые ошибки
-    // вроде этой: https://github.com/artem78/AutoScreenshot/issues/78
-
-    UpdateCheckOnStartupTimer.Interval:=RandomRange(30,100)*1000;
-    UpdateCheckOnStartupTimer.Enabled:=true;;
-    DebugLnEnter('Update check delay=%f sec', [UpdateCheckOnStartupTimer.Interval/1000]);
-  end;
-
-  // Enable global hotkeys
-  KeyHook := TGlobalKeyHook.Create({$IfDef Windows}Handle, 'AutoScreenshot'{$EndIf}
-                                   {$IfDef Linux}@OnHotKeyEvent{$EndIf});
-  HotKey := Ini.ReadHotKey(HotKeysIniSection, 'StartAutoCapture', NoHotKey);
-  try
-    KeyHook.RegisterKey('StartAutoCapture', HotKey);
-  except
-    KeyHook.RegisterKey('StartAutoCapture', NoHotKey);
-  end;
-  HotKey := Ini.ReadHotKey(HotKeysIniSection, 'StopAutoCapture', NoHotKey);
-  try
-    KeyHook.RegisterKey('StopAutoCapture', HotKey);
-  except
-    KeyHook.RegisterKey('StopAutoCapture', NoHotKey);
-  end;
-  HotKey := Ini.ReadHotKey(HotKeysIniSection, 'SingleCapture', NoHotKey);
-  try
-    KeyHook.RegisterKey('SingleCapture', HotKey);
-  except
-    KeyHook.RegisterKey('SingleCapture', NoHotKey);
-  end;
-  HotKey := Ini.ReadHotKey(HotKeysIniSection, 'ShowWindow', DefaultShowWindowHotKey);
-  try
-    KeyHook.RegisterKey('ShowWindow', HotKey);
-  except
-    KeyHook.RegisterKey('ShowWindow', NoHotKey);
-  end;
-
-  {$IfDef Linux}
-  // Enable monitor confuguration changed updates in Linux
-  XWatcher := TXRandREventWatcherThread.Create(RRScreenChangeNotifyMask, @OnScreenConfigurationChanged);
-  {$EndIf}
-
-  FileJournal := TFileJournal.Create;
-
-  FormInitialized := True;
-  DebugLn('Initializing finished');
-end;
-
-procedure TMainForm.CheckForUpdatesMenuItemClick(Sender: TObject);
-begin
-  CheckForUpdates(False);
-end;
-
-procedure TMainForm.AutoCaptureUpdaterTimerTimer(Sender: TObject);
-const
-  DefaultTimeout = 1000;
-begin
-  UpdateStatusBarAndTrayIconText;
-
-  if IsTimerEnabled then
-  begin
-    if StopWhenInactive and not (AutoCaptureTimer.Interval > UserIdleTime) then
-      TrayIconState := tisUserIdle // user idle
-    else if {TrayIconState} FTrayIconState = tisUserIdle then
-      TrayIconState := tisDefault;
-  end;
-
-  // reset update interval to defaut value
-  if (Sender as TTimer).Interval <> DefaultTimeout then
-    (Sender as TTimer).Interval := DefaultTimeout;
-end;
-
-procedure TMainForm.AutoCheckForUpdatesMenuItemClick(Sender: TObject);
-begin
-  AutoCheckForUpdates := not AutoCheckForUpdates;
-end;
-
-procedure TMainForm.CompressionLevelComboBoxChange(Sender: TObject);
-begin
-  CompressionLevel := Tcompressionlevel(CompressionLevelComboBox.ItemIndex);
-end;
-
-procedure TMainForm.EnableLoggingMenuItemClick(Sender: TObject);
-begin
-  EnableLogging:=not EnableLogging;
-
-  MessageDlg('Restart application for apply changes!', mtInformation,[mbok],0);
-end;
-
-procedure TMainForm.ExitMenuItemClick(Sender: TObject);
-begin
-  if ConfirmExit then
-    //Close;
-    Application.Terminate;
-end;
-
-procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-begin
-  CanClose := not MinimizeInsteadOfClose;
-  if MinimizeInsteadOfClose then
-    MinimizeToTray;
-
-  if CanClose then
-    CanClose := ConfirmExit;
-end;
-
-procedure TMainForm.HelpWithTranslationMenuItemClick(Sender: TObject);
-begin
-  OpenURL('https://app.transifex.com/--334/autoscreenshot/dashboard/');
-end;
-
-procedure TMainForm.HomePageMenuItemClick(Sender: TObject);
-begin
-  OpenURL(AddCustomParamsToUrl('https://artem78.github.io/AutoScreenshot/'));
-end;
-
-procedure TMainForm.LocateCfgFileMenuItemClick(Sender: TObject);
-begin
-  {$IfDef Windows}
-      ShellExecuteW(0, nil, 'explorer.exe', PWideChar(UTF8Decode('/select,'+CfgFilePath)), nil, SW_SHOWNORMAL);
-  {$EndIf}
-  {$IfDef Linux}
-      OpenDocument(ExtractFileDir(CfgFilePath));
-  {$EndIf}
-end;
-
-procedure TMainForm.LocateLogFileMenuItemClick(Sender: TObject);
-begin
-  {$IfDef Windows}
-      ShellExecuteW(0, nil, 'explorer.exe', PWideChar(UTF8Decode('/select,'+LogFilePath)), nil, SW_SHOWNORMAL);
-  {$EndIf}
-  {$IfDef Linux}
-      OpenDocument(ExtractFileDir(LogFilePath));
-  {$EndIf}
-end;
-
-procedure TMainForm.OpenCfgFileMenuItemClick(Sender: TObject);
-begin
-  OpenDocument(CfgFilePath);
-end;
-
-procedure TMainForm.OpenLogMenuItemClick(Sender: TObject);
-begin
-  if FileExists(LogFilePath) then
-    OpenDocument(LogFilePath)
-  else
-    MessageDlg('Log file not exist', mtWarning, [mbok],0);
-end;
-
-procedure TMainForm.OpenLogMenuItemOldClick(Sender: TObject);
-begin
-  OpenDocument(LogFilePath);
-end;
-
-procedure TMainForm.ReportIssueMenuItemClick(Sender: TObject);
-begin
-  OpenURL('https://github.com/artem78/AutoScreenshot/issues/new?assignees=&labels=bug&template=bug_report.md&title=');
-end;
-
-procedure TMainForm.SkipSimilarCheckBoxChange(Sender: TObject);
-begin
-  SkipSimilar := TCheckBox(Sender).Checked;
-end;
-
-procedure TMainForm.MinimizeInsteadOfCloseCheckBoxChange(Sender: TObject);
-begin
-  MinimizeInsteadOfClose := MinimizeInsteadOfClose;
-end;
-
-procedure TMainForm.OldScreenshotCleanerEnabledCheckBoxChange(Sender: TObject);
-begin
-  OldScreenshotCleaner.Active := TCheckBox(Sender).Checked;
-end;
-
-procedure TMainForm.FormDestroy(Sender: TObject);
-begin
-  FileJournal.Free;
-
-  {$IfDef Linux}
-  //XWatcher.Terminate;
-  //XWatcher.WaitFor;
-  XWatcher.Free;
-  {$EndIf}
-
-  Grabber.Free;
-  KeyHook.Free;
-  OldScreenshotCleaner.Free;
-  Ini.Free;
-
-  DebugLn('Program ended');
-end;
-
-procedure TMainForm.HotKetsSettingsMenuItemClick(Sender: TObject);
-var
-  HotKeysForm: THotKeysForm;
-begin
-  // ToDo: Reduce amount of code duplicates
-
-  HotKeysForm := THotKeysForm.Create(Nil, @OnHotKeysSaving);
-  HotKeysForm.StartAutoCaptureKey := Self.KeyHook.FindHotKey('StartAutoCapture');
-  HotKeysForm.StopAutoCaptureKey := Self.KeyHook.FindHotKey('StopAutoCapture');
-  HotKeysForm.SingleCaptureKey := Self.KeyHook.FindHotKey('SingleCapture');
-  HotKeysForm.ShowModal;
-  HotKeysForm.Free;
-end;
-
-procedure TMainForm.DonateMenuItemClick(Sender: TObject);
-begin
-  with TDonateForm.Create(Self) do
-  begin
-    try
-      ShowModal;
-    finally
-      Free;
-    end;
-  end;
-end;
-
-procedure TMainForm.OldScreenshotCleanerMaxAgeUnitComboBoxChange(
-  Sender: TObject);
-var
-  Interval: TInterval;
-begin
-  Interval := OldScreenshotCleaner.MaxAge;
-  Interval.&Unit := TIntervalUnit(TComboBox(Sender).ItemIndex);
-  OldScreenshotCleaner.MaxAge := Interval;
-end;
-
-procedure TMainForm.OldScreenshotCleanerMaxAgeValueSpinEditChange(
-  Sender: TObject);
-var
-  Interval: TInterval;
-begin
-  Interval := OldScreenshotCleaner.MaxAge;
-  Interval.Val := TSpinEdit(Sender).Value;
-  OldScreenshotCleaner.MaxAge := Interval;
-end;
-
-procedure TMainForm.OutputDirEditChange(Sender: TObject);
-begin
-    Ini.WriteString(DefaultConfigIniSection, 'OutputDir', OutputDirEdit.Text);
-end;
-
-procedure TMainForm.CaptureIntervalDateTimePickerChange(Sender: TObject);
-var
-  Seconds: Integer;
-begin
-  Seconds := SecondOfTheDay(CaptureIntervalDateTimePicker.Time);
-  if Seconds < MinCaptureIntervalInSeconds then
-  begin
-    Seconds := MinCaptureIntervalInSeconds;
-    CaptureIntervalDateTimePicker.Time := EncodeTime(0, 0, 0, 0);
-    CaptureIntervalDateTimePicker.Time := IncSecond(CaptureIntervalDateTimePicker.Time, Seconds);
-  end;
-  Ini.WriteFloat(DefaultConfigIniSection, 'CaptureInterval', Seconds / SecsPerMin);
-  AutoCaptureTimer.Interval := Seconds * MSecsPerSec;
-end;
-
-procedure TMainForm.PlaySoundsCheckBoxChange(Sender: TObject);
-begin
-  Sounds := Sounds;
-end;
-
-procedure TMainForm.PostCmdEditChange(Sender: TObject);
-begin
-  Ini.WriteString(DefaultConfigIniSection, 'PostCmd', PostCommand);
-end;
-
-procedure TMainForm.PreCmdEditChange(Sender: TObject);
-begin
-  Ini.WriteString(DefaultConfigIniSection, 'PreCmd', PreCommand);
-end;
-
-procedure TMainForm.SkipSimilarMatchPercentSpinEditChange(Sender: TObject);
-begin
-  ini.WriteInteger(DefaultConfigIniSection, 'SkipSimilarMatchPercent',
-                                                    SkipSimilarMatchPercent);
-end;
-
-procedure TMainForm.TimerTimer(Sender: TObject);
-begin
-  if StopWhenInactive then
-  begin
-    // Skip taking screenshot if there are no user activity
-    // for autocapture interval minutes
-
-    // ToDo: May add check for screensaver active
-    // or user logged off from the session
-    // ToDo: May add comparision of current screenshot with the last one,
-    // and if they equal, do not save current
-
-    if AutoCaptureTimer.Interval > UserIdleTime then
-      MakeScreenshot
-    else
-      DebugLn('Automatic capture skipped (Timer.Interval=%d, UserIdleTime=%d)',
-          [AutoCaptureTimer.Interval, UserIdleTime]);
-  end
-  else
-    MakeScreenshot;
-end;
-
-function TMainForm.GetTimerEnabled: Boolean;
-begin
-  Result := AutoCaptureTimer.Enabled;
-end;
-
-procedure TMainForm.SetTimerEnabled(AEnabled: Boolean);
-begin
-  AutoCaptureTimer.Enabled := AEnabled;
-  StartAutoCaptureButton.Enabled := not AEnabled;
-  StopAutoCaptureButton.Enabled := AEnabled;
-  // Tray menu
-  ToggleAutoCaptureTrayMenuItem.Checked := AEnabled;
-  // Tray icon
-  if AEnabled then
-    TrayIconState := tisDefault
-  else
-    TrayIconState := tisBlackWhite;
-
-  // Play sound
-  if FormInitialized or AEnabled then // Prevent to play "stop" sound immediately after program starts
-  begin
-    if AEnabled then
-      PlaySound('start.wav')
-    else
-      PlaySound('stop.wav');
-  end;
-
-  // Update statusbar
-  UpdateStatusBarAndTrayIconText;
-
-  if AEnabled then
-    DebugLn('Automatic capture started')
-  else
-    DebugLn('Automatic capture stopped');
-end;
-
-procedure TMainForm.StartAutoCaptureButtonClick(Sender: TObject);
-begin
-  IsTimerEnabled := True;
-end;
-
-procedure TMainForm.StopAutoCaptureButtonClick(Sender: TObject);
-begin
-  IsTimerEnabled := False;
-end;
-
-procedure TMainForm.ApplicationMinimize(Sender: TObject);
-begin
-  MinimizeToTray;
-end;
-
-procedure TMainForm.MakeScreenshot;
-var
-  Cmd, ImageFileName, ErrMsg, LastImgFileName: String;
-  SimilarSkipped: Boolean = false;
-begin
-  ImageFileName := ImagePath; // Use local variable because ImagePath() result
-                              // may be changed on next call
-  // Run user command before screenshot
-  try
-    Cmd := PreCommand;
-    if Cmd <> '' then
-    begin
-//      Cmd := StringReplace(Cmd, '%FILENAME%', ImageFileName, [rfReplaceAll{, rfIgnoreCase}]);
-      DebugLn('Execute command before screenshot: ', Cmd);
-      RunCmd{Inbackground}(Cmd);
-      //DebugLn('Execution success!'); // Not works
-    end;
-  except
-    on E: Exception do
-    begin
-      DebugLn('Execution failed: ', E.ToString);
-
-      if not AutoCaptureTimer.Enabled then // Manual capture
-      begin
-        ErrMsg := {'Execution of custom command failed: ' +} E.Message;
-        MessageDlg('Auto Screenshot', ErrMsg, mtWarning, [mbOK], '');
-      end;
-    end;
-  end;
-
-  PlaySound('camera_shutter.wav');
-  TrayIconState := tisFlashAnimation;
-
-  if MonitorId = NoMonitorId then
-    Grabber.CaptureAllMonitors(ImageFileName)
-  else
-  begin
-    if MonitorId = MonitorWithCursor then
-      Grabber.CaptureMonitor(ImageFileName, GetMonitorWithCursor)
-    else
-      Grabber.CaptureMonitor(ImageFileName, MonitorId);
-  end;
-
-  LastImgFileName := FileJournal.LastAdded;
-  //FileJournal.Add(ImageFileName);
-
-  SimilarSkipped:=False;
-  If SkipSimilar and (LastImgFileName <> '') then
-  begin
-    if ImagesEqual(LastImgFileName, ImageFileName, SkipSimilarMatchPercent) then
-    begin
-      DeleteFile(ImageFileName);
-      DebugLn('Skip similar screenshot (%s ~ %s)', [LastImgFileName, ImageFileName]);
-      SimilarSkipped:=True;
-    end
-    else
-      FileJournal.Add(ImageFileName);
-  end
-  else
-    FileJournal.Add(ImageFileName);
-
-  if SimilarSkipped then
-    ShowNotificationInStatusBar(Localizer.I18N('ScreenshotSkipped'))
-  else
-    ShowNotificationInStatusBar(Format(Localizer.I18N('ScreenshotSaved'), [ImageFileName]));
-
-  // Run user command after screenshot
-  try
-    Cmd := PostCommand;
-    if Cmd <> '' then
-    begin
-      Cmd := StringReplace(Cmd, '%FILENAME%', ImageFileName, [rfReplaceAll{, rfIgnoreCase}]);
-      DebugLn('Execute command after screenshot: ', Cmd);
-      RunCmdInbackground(Cmd);
-      //DebugLn('Execution success!'); // Not works
-    end;
-  except
-    on E: Exception do
-    begin
-      DebugLn('Execution failed: ', E.ToString);
-
-      if not AutoCaptureTimer.Enabled then // Manual capture
-      begin
-        ErrMsg := {'Execution of custom command failed: ' +} E.Message;
-        MessageDlg('Auto Screenshot', ErrMsg, mtWarning, [mbOK], '');
-      end;
-    end;
-  end;
-
-  // Increment counter after successful capture
-  //Inc(Counter);
-  Counter := Counter + 1;
-end;
-
-procedure TMainForm.TakeScreenshotButtonClick(Sender: TObject);
-var
-  DefaultTransparency: Byte;
-begin
-  DefaultTransparency := AlphaBlendValue; // Save current transparency value (usually = 255)
-  // Set form transparency to 100%
-  AlphaBlendValue := 0;
-  AlphaBlend := True;
-  try
-    MakeScreenshot;
-  finally
-    // Restore transparency to initial value
-    AlphaBlendValue := DefaultTransparency;
-    AlphaBlend := False;
-  end;
-end;
-
-procedure TMainForm.JPEGQualitySpinEditChange(Sender: TObject);
-begin
-  if Ini = Nil then
-    Exit;
-
-  try
-    Ini.WriteInteger(DefaultConfigIniSection, 'JPEGQuality', JPEGQuality);
-    if Grabber <> nil then
-      Grabber.Quality := JPEGQuality;
-  finally
-  end;
-end;
-
-function TMainForm.GetFinalOutputDir: String;
-var
-  BaseDir, SubDir, FullDir: String;
-begin
-  BaseDir := Ini.ReadString(DefaultConfigIniSection, 'OutputDir', '');
-
-  SubDir := ExtractFileDir({Ini.ReadString(DefaultConfigIniSection, 'FileNameTemplate', '')} FileNameTemplateComboBox.Text);
-  SubDir := FormatPath(SubDir);
-
-  FullDir := IncludeTrailingPathDelimiter(ConcatPaths([BaseDir, SubDir]));
-
-  if not DirectoryExists(FullDir) then
-  begin
-    if not ForceDirectories(FullDir) then
-      RaiseLastOSError;
-  end;
-
-  Result := FullDir;
-end;
-
-function TMainForm.GetImagePath: String;
-var
-  DirName, FileName: String;
-begin
-  FileName := ExtractFileName(FileNameTemplateComboBox.Text);
-  FileName := FormatPath(FileName);
-
-  DirName := IncludeTrailingPathDelimiter(FinalOutputDir);
-
-  Result := DirName + FileName + '.' + ImageFormatInfoArray[ImageFormat].Extension;
-end;
-
-procedure TMainForm.OpenOutputDirButtonClick(Sender: TObject);
-begin
-  OpenDocument(FinalOutputDir);
-end;
-
-procedure TMainForm.StopWhenInactiveCheckBoxClick(Sender: TObject);
-begin
-  StopWhenInactive := StopWhenInactiveCheckBox.Checked;
-end;
-
-procedure TMainForm.ImageFormatComboBoxChange(Sender: TObject);
-var
-  Format: TImageFormat;
-  IsQualityVisible, IsGrayscaleVisible, IsCompressionLevelVisible: Boolean;
-begin
-  DisableAutoSizing;
-
-  try
-    Format := ImageFormat;
-    IsQualityVisible := ImageFormatInfoArray[Format].HasQuality;
-
-    JPEGQualitySpinEdit.Visible := IsQualityVisible;
-    JPEGQualityLabel.Visible    := IsQualityVisible;
-    JPEGQualityPercentLabel.Visible := IsQualityVisible;
-
-    IsGrayscaleVisible := ImageFormatInfoArray[Format].HasGrayscale;
-    GrayscaleCheckBox.Visible := IsGrayscaleVisible;
-
-    IsCompressionLevelVisible := ImageFormatInfoArray[Format].HasCompressionLevel;
-    CompressionLevelLabel.Visible := IsCompressionLevelVisible;
-    CompressionLevelComboBox.Visible := IsCompressionLevelVisible;
-
-    UpdateColorDepthValues;
-  
-    Ini.WriteString(DefaultConfigIniSection, 'ImageFormat', ImageFormatInfoArray[Format].Name);
-
-    if Grabber <> nil then
-      Grabber.ImageFormat := Format;
-  finally
-    EnableAutoSizing;
-
-    UpdateFormAutoSize;
-  end;
-end;
-
-procedure TMainForm.ToggleAutoCaptureTrayMenuItemClick(Sender: TObject);
-begin
-  IsTimerEnabled := not IsTimerEnabled;
-end;
-
-procedure TMainForm.RestoreWindowTrayMenuItemClick(Sender: TObject);
-begin
-  RestoreFromTray;
-end;
-
-procedure TMainForm.TakeScreenshotTrayMenuItemClick(Sender: TObject);
-begin
-  // ToDo: How to minimize this delay?
-  Sleep(700); // Add some delay before capture, otherwise the popup
-              // menu may be still visible on screenshot
-              // (without delay: https://ibb.co/mHGKHzL)
-  MakeScreenshot;
-end;
-
-procedure TMainForm.ExitTrayMenuItemClick(Sender: TObject);
-begin
-  if ConfirmExit then
-    //Close;
-    Application.Terminate;
-end;
-
-procedure TMainForm.MinimizeToTray;
-begin
-  {TrayIcon.AppVisible := False;
-  TrayIcon.FormVisible := False;
-  TrayIcon.IconVisible := True; }
-
-  {Application.MainFormOnTaskBar := False;
-  Application.ShowMainForm := False;
-  //Hide;}
-  Hide;
-  WindowState := wsMinimized;
-  //TrayIcon.Show; // tray icon disabled: use the ShowWindow hotkey to restore
-end;
-
-procedure TMainForm.RestoreFromTray;
-begin
-  {TrayIcon.IconVisible := False;
-  TrayIcon.AppVisible := True;
-  TrayIcon.FormVisible := True;
-  Application.Restore;
-  Application.BringToFront();}
-
-  TrayIcon.Hide;
-  {Application.MainFormOnTaskBar := True;
-  Application.ShowMainForm := True;
-  //Show;
-  Application.Restore;
-  Application.BringToFront;}
-  WindowState := wsNormal;
-  Show;
-end;
-
-//procedure TMainForm.SetLanguage(Lang: TLanguage);
-//begin
-//  {if (FLanguage = Lang) then
-//    Exit;}
-//
-//  FLanguage := Lang;
-//  Ini.WriteString(DefaultConfigIniSection, 'Language', LanguageCodes[Lang]);
-//  LanguageSubMenu.Items[Ord(Lang)].Checked := True;
-//  Localizer.SetLang(LanguageCodes[Lang]);
-//  TranslateForm;
-//end;
-
-procedure TMainForm.SetLanguageByCode(LangCode: TLanguageCode);
-var
-  LangIdx: integer;
-begin
-  for LangIdx := 0 to Length(AvailableLanguages) - 1 do
-  begin
-    if LangCode = AvailableLanguages[LangIdx].Code then
-    begin
-      FLanguage := LangCode;
-
-      Ini.WriteString(DefaultConfigIniSection, 'Language', LangCode);
-      FindLangMenuItem(LangCode).Checked := True;
-      Localizer.LoadFromFile(AvailableLanguages[LangIdx].FileName);
-      TranslateForm;
-
+    Result := False;
+    if Length(Trim(ABase64)) = 0 then
       Exit;
+
+    Str := DecodeStringBase64(ABase64);
+    AStream.Write(Pointer(Str)^, Length(Str) div SizeOf(Char));
+    AStream.Position := 0;
+    Result := True;
+  end;
+
+var
+  IconStrm: TMemoryStream;
+begin
+  IconStrm := TMemoryStream.Create;
+  try
+    if not Base64ToStream(AStr, IconStrm) then
+      raise Exception.Create('Can''t load picture from base64 string');
+
+    Self.LoadFromStream(IconStrm);
+  finally
+    IconStrm.Free;
+  end;
+end;
+
+{ TDonateForm }
+
+procedure TDonateForm.FormCreate(Sender: TObject);
+  // Create any dummy empty control to prevent layout broken when no control in grid position
+  procedure AddEmptyCtrl;
+  begin
+    with TLabel.Create(PaymentMethodsPanel) do
+    begin
+      Text := '';
+      AutoSize := True;
+      Parent := PaymentMethodsPanel;
     end;
   end;
 
-  raise Exception.CreateFmt('Unknown language code "%s"', [LangCode]);
-end;
-
-procedure TMainForm.TranslateForm;
-const
-  {$IfDef Windows}
-  //PreCmdExample = 'msg "%username%" /time:4 "Screenshot will be taken after 5 seconds!" & timeout 5';
-  PreCmdExample = 'mshta vbscript:Execute("msgbox ""Press OK button to take screenshot"":close")';
-  PostCmdExample = 'copy "%FILENAME%" "C:\dir\"';
-  {$EndIf}
-  {$IfDef Linux}
-  PreCmdExample = 'zenity --notification --text="Screenshot will be taken after 5 seconds!" & sleep 5';
-  PostCmdExample = 'cp "%FILENAME%" "~/dir/"';
-  {$EndIf}
+var
+  I: Integer;
+  IconBase64, DonateUrl: String;
 begin
-  DisableAutoSizing;
+  Caption := Localizer.I18N('Donate');
+  DonateInfoLabel.Caption := Localizer.I18N('DonateInfo');
 
   try
-    // Menubar
-    OptionsSubMenu.Caption := Localizer.I18N('Options');
-    LanguageSubMenu.Caption := Localizer.I18N('Language');
-    if LanguageSubMenu.Caption <> 'Language' then
-      LanguageSubMenu.Caption := LanguageSubMenu.Caption + ' (Language)';
-    HelpSubMenu.Caption := Localizer.I18N('Help');
-    AboutMenuItem.Caption := Localizer.I18N('About') + '...';
-    CheckForUpdatesMenuItem.Caption := Localizer.I18N('CheckForUpdates') + '...';
-    AutoCheckForUpdatesMenuItem.Caption := Localizer.I18N('AutoCheckForUpdates');
-    HotKetsSettingsMenuItem.Caption := Localizer.I18N('EditHotKeys') + '...';
-    DonateMenuItem.Caption := Localizer.I18N('Donate');
-    ExitMenuItem.Caption := Localizer.I18N('Exit');
-    FileMenuItem.Caption := Localizer.I18N('File');
-    HomePageMenuItem.Caption := Localizer.I18N('VisitHomepage') + '...';
-    HelpWithTranslationMenuItem.Caption := Localizer.I18N('HelpWithTranslation') + '...';
-    ReportIssueMenuItem.Caption:=Localizer.I18N('ReportIssue')+'...';
+    LoadData();
 
-    // Main form components
-    OutputDirLabel.Caption := Localizer.I18N('OutputDirectory') + ':';
-    OutputDirEdit.DialogTitle := Localizer.I18N('SelectOutputDirectory');
-    OpenOutputDirButton.Caption := Localizer.I18N('OpenDirectory');
-    OpenOutputDirButton.Hint := Localizer.I18N('OpenDirectoryHint');
-    FileNameTemplateLabel.Caption := Localizer.I18N('FileNameTemplate') + ':';
-    CaptureIntervalLabel.Caption := Localizer.I18N('CaptureInterval') + ':';
-    StopWhenInactiveCheckBox.Caption := Localizer.I18N('PauseCaptureWhenIdle');
-    StopWhenInactiveCheckBox.Hint := Localizer.I18N('PauseCaptureWhenIdleHint');
-    ImageFormatLabel.Caption := Localizer.I18N('Format') + ':';
-    ColorDepthLabel.Caption := Localizer.I18N('ColorDepth') + ':';
-    JPEGQualityLabel.Caption := Localizer.I18N('Quality') + ':';
-    GrayscaleCheckBox.Caption := Localizer.I18N('Grayscale');
-    AutoCaptureControlGroup.Caption := Localizer.I18N('AutoCapture');
-    StartAutoCaptureButton.Caption := Localizer.I18N('StartCapture');
-    StopAutoCaptureButton.Caption := Localizer.I18N('StopCapture');
-    TakeScreenshotButton.Caption := Localizer.I18N('TakeScreenshot');
-    StartCaptureOnStartUpCheckBox.Caption := Localizer.I18N('StartCaptureOnStartUp');
-    StartMinimizedCheckBox.Caption := Localizer.I18N('StartMinimized');
-    AutoRunCheckBox.Caption := Localizer.I18N('AutoRun');
-    MonitorLabel.Caption := Localizer.I18N('UsedMonitor') + ':';
-    FillMonitorList;
-    SeqNumberGroup.Caption := Localizer.I18N('SequentialNumber');
-    SeqNumberValueLabel.Caption := Localizer.I18N('NextValue') + ':';
-    SeqNumberDigitsCountLabel.Caption := Localizer.I18N('Digits') + ':';
-    PostCmdLabel.Caption := Localizer.I18N('RunCommand') + ':';
-    PostCmdEdit.Hint := StringReplace(Localizer.I18N('RunCommandHelpText'),
-                                      '%s', PostCmdExample, []);
-
-    CompressionLevelLabel.Caption := Localizer.I18N('CompressionLevel') + ':';
-    with CompressionLevelComboBox do
+    for I := 0 to Length(Entries) - 1 do
     begin
-      Items[0] := Localizer.I18N('CompressionLevelNone');
-      Items[1] := Localizer.I18N('CompressionLevelFastest');
-      Items[2] := Localizer.I18N('CompressionLevelDefault');
-      Items[3] := Localizer.I18N('CompressionLevelMax');
-      AutoWidth;
-    end;
-
-    OldScreenshotCleanerEnabledCheckBox.Caption := Localizer.I18N('DeleteScreenshotsOlderThan');
-    with OldScreenshotCleanerMaxAgeUnitComboBox do
-    begin
-      Items[Ord(iuHours)]  := Localizer.I18N('Hours');
-      Items[Ord(iuDays)]   := Localizer.I18N('Days');
-      Items[Ord(iuWeeks)]  := Localizer.I18N('Weeks');
-      Items[Ord(iuMonths)] := Localizer.I18N('Months');
-      AutoWidth;
-    end;
-
-    PlaySoundsCheckBox.Caption := Localizer.I18N('PlaySounds');
-    MinimizeInsteadOfCloseCheckBox.Caption := Localizer.I18N('MinimizeInSteadOfClose');
-
-    // Tray icon
-    RestoreWindowTrayMenuItem.Caption := Localizer.I18N('Restore');
-    ToggleAutoCaptureTrayMenuItem.Caption := Localizer.I18N('EnableAutoCapture');
-    TakeScreenshotTrayMenuItem.Caption := Localizer.I18N('TakeScreenshot');
-    ExitTrayMenuItem.Caption := Localizer.I18N('Exit');
-
-    PreCmdLabel.Caption := Localizer.I18N('RunCommandBefore') + ':';
-    PreCmdEdit.Hint := StringReplace(Localizer.I18N('RunCommandBeforeHelpText'),
-                                  '%s', PreCmdExample, []);
-
-    SkipSimilarCheckBox.Caption := Localizer.I18N('SkipSimilar');
-    SkipSimilarCheckBox.Hint := Localizer.I18N('SkipSimilarHint');
-    Label1.Caption := Localizer.I18N('Match');
-  finally
-    EnableAutoSizing;
-
-    UpdateFormAutoSize;
-  end;
-end;
-
-procedure TMainForm.StartCaptureOnStartUpCheckBoxClick(Sender: TObject);
-begin
-  Ini.WriteBool(DefaultConfigIniSection, 'StartCaptureOnStartUp', StartCaptureOnStartUpCheckBox.Checked);
-end;
-
-procedure TMainForm.StartMinimizedCheckBoxClick(Sender: TObject);
-begin
-  StartMinimized := StartMinimizedCheckBox.Checked;
-end;
-
-procedure TMainForm.FileNameTemplateComboBoxChange(Sender: TObject);
-begin
-  Ini.WriteString(DefaultConfigIniSection, 'FileNameTemplate', FileNameTemplateComboBox.Text);
-
-  UpdateSeqNumGroupVisibility
-end;
-
-procedure TMainForm.FileNameTemplateHelpButtonClick(Sender: TObject);
-begin
-  //ShowMessage(Localizer.I18N('FileNameTemplateHelpText')); // Can`t show tabs in Windows
-
-  with TFileNameTemplateHelpForm.Create(Application) do
-  begin
-    ShowModal;
-  end;
-end;
-
-function TMainForm.GetImageFormat: TImageFormat;
-begin
-  Result := TImageFormat(ImageFormatComboBox.ItemIndex);
-end;
-
-procedure TMainForm.SetImageFormatByStr(FmtStr: String);
-var
-  Fmt: TImageFormat;
-begin
-  for Fmt in TImageFormat do
-  begin
-    if ImageFormatInfoArray[Fmt].Name = FmtStr then
-    begin
-      SetImageFormat(Fmt);
-      Exit;
-    end;
-  end;
-
-  raise Exception.CreateFmt('Unknown format "%s"', [FmtStr]);
-end;
-
-procedure TMainForm.SetImageFormat(Fmt: TImageFormat);
-begin
-  ImageFormatComboBox.ItemIndex := Ord(Fmt);
-  ImageFormatComboBox.OnChange(ImageFormatComboBox);
-end;
-
-procedure TMainForm.GrayscaleCheckBoxClick(Sender: TObject);
-begin
-  Grayscale := GrayscaleCheckBox.Checked;
-end;
-
-procedure TMainForm.ColorDepthComboBoxChange(Sender: TObject);
-var
-  Idx: Integer;
-begin
-  Idx := ColorDepthComboBox.ItemIndex;
-  if Idx <> -1 then
-    ColorDepth := TColorDepth(PtrUint(ColorDepthComboBox.Items.Objects[Idx]));
-end;
-
-procedure TMainForm.UpdateColorDepthValues;
-var
-  ColorDepthTmp: TColorDepth;
-  IsEmpty: Boolean;
-  Idx: Integer;
-begin
-  {if ImageFormatComboBox.ItemIndex = 1 then
-    Exit;}
-
-  ColorDepthComboBox.Clear;
-  ColorDepthComboBox.ItemIndex := -1;
-
-  IsEmpty := ImageFormatInfoArray[ImageFormat].ColorDepth = [];
-
-  if not IsEmpty then
-  begin
-    Idx := 0;
-    //for ColorDepthTmp in TColorDepth do
-    for ColorDepthTmp := Low(TColorDepth) to High(TColorDepth) do
-    begin
-      if ColorDepthTmp in ImageFormatInfoArray[ImageFormat].ColorDepth then
+      // Payment method icon
+      IconBase64 := Entries[I].IconBase64;
+      if not IconBase64.IsEmpty then
       begin
-        ColorDepthComboBox.Items.AddObject(Format('%d bit', [Integer(ColorDepthTmp)]), TObject({Integer}PtrUint(ColorDepthTmp)));
-        if ColorDepthTmp = FColorDepth then
+        with TImage.Create(PaymentMethodsPanel) do
         begin
-          // Select last saved color depth if available
-          ColorDepth := TColorDepth(PtrUint(ColorDepthComboBox.Items.Objects[Idx]));
+          Picture.LoadFromBase64(IconBase64);
+          BorderSpacing.CellAlignVertical := ccaCenter;
+          BorderSpacing.CellAlignHorizontal := {ccaCenter} ccaRightBottom;
+          Parent := PaymentMethodsPanel;
         end;
-        Inc(Idx);
-      end;
-    end;
-
-    if (ColorDepthComboBox.ItemIndex = -1) and (FColorDepth <> TColorDepth(0)) then
-    begin
-      // Select best color depth (last one in the list)
-      Idx := ColorDepthComboBox.Items.Count - 1;
-      ColorDepth := TColorDepth(PtrUint(ColorDepthComboBox.Items.Objects[Idx]));
-    end;
-  end;
-
-  ColorDepthLabel.Visible := not IsEmpty;
-  ColorDepthComboBox.Visible := not IsEmpty;
-
-  ColorDepthComboBox.OnChange(ColorDepthComboBox);
-end;
-
-procedure TMainForm.UpdateMonitorList;
-var
-  Idx: Integer;
-begin
-  // Update array in Screen variable first
-  Screen.UpdateMonitors;
-
-  // Disable choosing monitor if only one available
-  if Screen.MonitorCount >= 2 then
-  begin // Multiple monitors
-    MonitorLabel.Enabled := True;
-    MonitorComboBox.Enabled := True;
-
-    // Fix out of bounds
-    if MonitorId >= Screen.MonitorCount then
-      //MonitorId := Screen.MonitorCount - 1; // Last
-      MonitorId := NoMonitorId;
-  end
-  else
-  begin // Only one monitor available
-    MonitorLabel.Enabled := False;
-    MonitorComboBox.Enabled := False;
-    MonitorId := NoMonitorId;
-    //MonitorId := 0;
-  end;
-
-  // Fill combobox
-  FillMonitorList;
-
-  DebugLn('Monitor configuration changed');
-  DebugLn(['Monitors count: ', Screen.MonitorCount]);
-  for Idx := 0 to Screen.MonitorCount - 1 do
-  begin
-    DebugLnEnter('Monitor id=%d (%d)%s %dx%d dpi=%d',
-          [Screen.Monitors[Idx].MonitorNum,
-           Screen.Monitors[Idx].MonitorNum + 1,
-           IfThen(Screen.Monitors[Idx].Primary, ' primary'),
-           Screen.Monitors[Idx].Width,
-           Screen.Monitors[Idx].Height,
-           Screen.Monitors[Idx].PixelsPerInch]
-    );
-    DebugLnEnter('BoundsRect: ', DbgS(Screen.Monitors[Idx].BoundsRect));
-    DebugLnExit('WorkareaRect: ', DbgS(Screen.Monitors[Idx].WorkareaRect));
-    DebugLnExit();
-  end;
-  DebugLn(['SM_CXVIRTUALSCREEN=', GetSystemMetrics(SM_CXVIRTUALSCREEN)]);
-  DebugLn(['SM_CYVIRTUALSCREEN=', GetSystemMetrics(SM_CYVIRTUALSCREEN)]);
-  DebugLn(['SM_XVIRTUALSCREEN=', GetSystemMetrics(SM_XVIRTUALSCREEN)]);
-  DebugLn(['SM_YVIRTUALSCREEN=', GetSystemMetrics(SM_YVIRTUALSCREEN)]);
-end;
-
-function TMainForm.GetColorDepth: TColorDepth;
-begin
-  if ImageFormatInfoArray[ImageFormat].ColorDepth = [] then
-    raise Exception.CreateFmt('%s format has no color depth option',
-          [ImageFormatInfoArray[ImageFormat].Name])
-  else
-  begin
-    if FColorDepth = TColorDepth(0) then
-      raise Exception.Create('Color depth not initialized')
-    else
-      Result := FColorDepth;
-  end;
-end;
-
-procedure TMainForm.SetColorDepth(AColorDepth: TColorDepth);
-var
-  Idx: Integer;
-begin
-  ColorDepthComboBox.ItemIndex := -1;
-
-  if AColorDepth in ImageFormatInfoArray[ImageFormat].ColorDepth then
-  begin
-    // Choose new value in combobox
-    for Idx := 0 to ColorDepthComboBox.Items.Count - 1 do
-    begin
-      if TColorDepth(PtrUint(ColorDepthComboBox.Items.Objects[Idx])) = AColorDepth then
-      begin
-        ColorDepthComboBox.ItemIndex := Idx;
-        Break;
-      end;
-    end;
-
-    FColorDepth := AColorDepth;
-    Ini.WriteInteger(DefaultConfigIniSection, 'ColorDepth', Integer(AColorDepth));
-    if Grabber <> nil then
-      Grabber.ColorDepth := AColorDepth;
-  end
-  else
-    raise Exception.CreateFmt('Color depth %d-bit not allowed for %s format',
-      [integer(AColorDepth), ImageFormatInfoArray[ImageFormat].Name]);
-end;
-
-procedure TMainForm.SetTrayIconState(IconState: TTrayIconState);
-var
-  ResName: String;
-begin
-  if IconState <> tisFlashAnimation then
-    FTrayIconState := IconState;
-  
-  case IconState of
-    tisBlackWhite: ResName := '_CAMERA_BW';
-    tisFlashAnimation:
-      begin
-        TrayIconIdx := Low(TrayIconIdx);
-        TrayIconAnimationTimer.Enabled := True;
-        ResName := Format('_CAMERA_FLASH_%d', [TrayIconIdx]);
-      end;
-    tisUserIdle: ResName := '_CAMERA_USER_IDLE'
-    //tisDefault:
-    else ResName := '_CAMERA';
-  end;
-
-  TrayIcon.Icon.LoadFromResourceName(HInstance, ResName);
-end;
-
-procedure TMainForm.TrayIconAnimationTimerTimer(Sender: TObject);
-var
-  ResName: String;
-begin
-  if (TrayIconIdx < High(TrayIconIdx)) then
-  begin
-    Inc(TrayIconIdx);
-    ResName := Format('_CAMERA_FLASH_%d', [TrayIconIdx]);
-    TrayIcon.Icon.LoadFromResourceName(HInstance, ResName);
-  end
-  else
-  begin
-    TrayIconIdx := Low(TrayIconIdx);
-    TrayIconAnimationTimer.Enabled := False; // Stop animation
-
-    // Restore previous tray icon
-    TrayIconState := FTrayIconState;
-  end;
-end;
-
-procedure TMainForm.AutoRunCheckBoxClick(Sender: TObject);
-begin
-  AutoRun := AutoRunCheckBox.Checked;
-end;
-
-procedure TMainForm.MonitorComboBoxChange(Sender: TObject);
-begin
-  SetMonitorId(GetMonitorId);
-end;
-
-procedure TMainForm.FillMonitorList;
-var
-  Idx, SelIdx: Integer;
-  Str: WideString;
-  IsLocalizationLoaded: Boolean;
-
-begin
-  IsLocalizationLoaded := True;
-  try
-    Localizer.I18N('test...')
-  except
-    IsLocalizationLoaded := False;
-  end;
-
-  if not IsLocalizationLoaded then
-    Exit;
-
-
-  // Fill combobox with monitor list
-  with MonitorComboBox do
-  begin
-    //SelId := MonitorId;
-    SelIdx := MonitorComboBox.ItemIndex;
-
-    Items.Clear;
-    Items.Append(WideFormat(Localizer.I18N('AllMonitorsInfo'),
-        [GetSystemMetrics(SM_CXVIRTUALSCREEN),
-         GetSystemMetrics(SM_CYVIRTUALSCREEN)]
-    ));
-
-    Items.Append(Localizer.I18N('MonitorWithCursor'));
-
-    for Idx := 0 to Screen.MonitorCount - 1 do
-    begin
-      Str := WideFormat(Localizer.I18N('MonitorInfo'),
-          [Screen.Monitors[Idx].MonitorNum + 1, // Start numeration from 1
-           Screen.Monitors[Idx].Width,
-           Screen.Monitors[Idx].Height]
-      );
-      // ToDo: Also may show screen model, diagonal size
-      if Screen.Monitors[Idx].Primary then
-        Str := Str + ' - ' + Localizer.I18N('Primary');
-
-      Items.Append(Str);
-    end;
-
-    // Restore previous selected item after strings updated
-    //MonitorId := SelId;
-    MonitorComboBox.ItemIndex := SelIdx;
-  end;
-
-  // Adjust width
-  MonitorComboBox.AutoWidth;
-end;
-
-function TMainForm.GetMonitorId: Integer;
-begin
-  if MonitorComboBox.ItemIndex <= 0 then
-    Result := NoMonitorId
-  else
-  begin
-    if MonitorComboBox.ItemIndex = 1 then
-      Result := MonitorWithCursor
-    else
-      Result := MonitorComboBox.ItemIndex - 2;
-  end;
-end;
-
-procedure TMainForm.SetMonitorId(MonitorId: Integer);
-begin
-  if MonitorId = NoMonitorId then
-    MonitorComboBox.ItemIndex := 0
-  else if MonitorId = MonitorWithCursor then
-    MonitorComboBox.ItemIndex := 1
-  else if (MonitorId >= 0) and (MonitorId < {Screen.MonitorCount} MonitorComboBox.Items.Count) then
-    MonitorComboBox.ItemIndex := MonitorId + 2
-  else
-    raise Exception.CreateFmt('Monitor id=%d not exists', [MonitorId]);
-
-  if Ini <> Nil then
-    Ini.WriteInteger(DefaultConfigIniSection, 'Monitor', MonitorId);
-end;
-
-procedure TMainForm.AboutMenuItemClick(Sender: TObject);
-begin
-  with TAboutForm.Create(Application) do
-  begin
-    ShowModal;
-  end;
-end;
-
-procedure TMainForm.TrayIconDblClick(Sender: TObject);
-begin
-  RestoreFromTray;
-end;
-
-procedure TMainForm.UpdateLanguages;
-{const
-  GroupIdx = 1;}
-var
-  Lang: TLanguageInfo;
-  MenuItem: TMenuItem;
-  LangsList: TStringList;
-  Line: String;
-  FlagResourceName: String;
-begin
-  while LanguageSubMenu.Count > 0 do
-    LanguageSubMenu.Items[0].Free;
-  LanguageSubMenu.Clear;
-  LangFlagImageList.Clear;
-
-  LangsList := TStringList.Create;
-
-  Localizer.GetLanguages(AvailableLanguages);
-  for Lang in AvailableLanguages do
-  begin
-    if (Lang.Name <> '') and (Lang.Code <> '') then
-    begin
-      if (Lang.NativeName <> '') and (Lang.NativeName <> Lang.Name) then
-        Line := Format('%s (%s)', [Lang.Name, Lang.NativeName])
-      else
-        Line := Lang.Name;
-
-      Line := Line + #9 + Lang.Code;
-
-      LangsList.Append(Line);
-    end;
-  end;
-  LangsList.Sort;
-
-  for Line in LangsList do
-  begin
-    MenuItem := TMenuItem.Create(LanguageSubMenu);
-    MenuItem.Caption := ExtractDelimited(1, Line, [#9]);
-    MenuItem.OnClick := @LanguageClick;
-    MenuItem.RadioItem := True;
-    //MenuItem.GroupIndex := GroupIdx;
-    MenuItem.Name := LanguageSubMenuItemNamePrefix + ExtractDelimited(2, Line, [#9]);
-
-    // Flag icon
-    FlagResourceName := 'FLAG_' + UpperCase(ExtractDelimited(2, Line, [#9]));
-    if system.FindResource(HINSTANCE, FlagResourceName, RT_RCDATA) <> 0 then
-      MenuItem.ImageIndex := LangFlagImageList.AddResourceName(HINSTANCE, FlagResourceName)
-    else
-      MenuItem.ImageIndex := -1;
-
-    LanguageSubMenu.Add(MenuItem);
-  end;
-
-  LangsList.Free;
-end;
-
-
-procedure TMainForm.LanguageClick(Sender: TObject);
-var
-  LangCode: TLanguageCode;
-begin
-  LangCode := GetLangCodeOfLangMenuItem(Sender as TMenuItem);
-  SetLanguageByCode(LangCode);
-end;
-
-function TMainForm.FindLangMenuItem(ALangCode: TLanguageCode): TMenuItem;
-var
-  I: integer;
-  LangCode: TLanguageCode;
-  MenuItem: TMenuItem;
-begin
-  for I := 0 to LanguageSubMenu.Count - 1 do
-  begin
-    MenuItem := LanguageSubMenu.Items[I];
-    LangCode := GetLangCodeOfLangMenuItem(MenuItem);
-    if LangCode = ALangCode then
-    begin
-      Result := MenuItem;
-      Exit;
-    end;
-  end;
-
-  raise Exception.CreateFmt('Language code "%s" not found', [ALangCode]);
-end;
-
-function TMainForm.GetLangCodeOfLangMenuItem(
-  const LangItem: TMenuItem): TLanguageCode;
-begin
-  if Pos(LanguageSubMenuItemNamePrefix, LangItem.Name) = 1 then
-    Result := Copy(LangItem.Name, Length(LanguageSubMenuItemNamePrefix) + 1, 2)
-  else
-    raise Exception.CreateFmt('Can`t get language code from language menu item' +
-        ' "%s" (name=%s)', [LangItem.Caption, LangItem.Name]);
-end;
-
-function TMainForm.FormatPath(Str: string): string;
-const
-  TmplVarsChar = '%';
-var
-  CounterStr: String[MaxCounterDigits];
-begin
-  Result := Str;
-
-  CounterStr := Dec2Numb(Counter, CounterDigits, 10); // Add leading zeros to Counter value
-
-  Result := StringReplace(Result, TmplVarsChar + 'COMP', GetLocalComputerName, [rfReplaceAll]);
-  Result := StringReplace(Result, TmplVarsChar + 'USER', GetCurrentUserName,   [rfReplaceAll]);
-  Result := StringReplace(Result, TmplVarsChar + 'NUM',  CounterStr,           [rfReplaceAll]);
-
-  // Date/time
-  Result := FormatDateTime2(Result);
-end;
-
-procedure TMainForm.SetCounter(Val: Integer);
-begin
-  FCounter := Val;
-  Ini.WriteInteger(DefaultConfigIniSection, 'Counter', FCounter);
-  SeqNumberValueSpinEdit.Value := FCounter;
-end;
-
-procedure TMainForm.SeqNumberValueSpinEditChange(Sender: TObject);
-begin
-  if Ini = Nil then
-    Exit;
-
-  try
-    Counter := SeqNumberValueSpinEdit.Value;
-  finally
-  end;
-end;
-
-procedure TMainForm.SetCounterDigits(Val: Integer);
-begin
-  FCounterDigits := Val;
-  Ini.WriteInteger(DefaultConfigIniSection, 'CounterDigits', FCounterDigits);
-  SeqNumberDigitsCountSpinEdit.Value := FCounterDigits;
-end;
-
-procedure TMainForm.UpdateSeqNumGroupVisibility;
-begin
-  SeqNumberGroup.Visible := Pos('%NUM', FileNameTemplateComboBox.Text) <> 0;
-  EmptyLabel1.Visible := SeqNumberGroup.Visible;
-
-  UpdateFormAutoSize;
-end;
-
-procedure TMainForm.SetJPEGQuality(Val: Integer);
-begin
-  JPEGQualitySpinEdit.Value := Val;
-end;
-
-function TMainForm.GetJPEGQuality: Integer;
-begin
-  Result := JPEGQualitySpinEdit.Value;
-end;
-
-procedure TMainForm.SetStopWhenInactive(const Val: Boolean);
-begin
-   if FStopWhenInactive <> Val then
-   begin
-     FStopWhenInactive := Val;
-     StopWhenInactiveCheckBox.Checked := Val;
-     Ini.WriteBool(DefaultConfigIniSection, 'StopWhenInactive', Val);
-   end;
-end;
-
-procedure TMainForm.SetStartMinimized(const Val: Boolean);
-begin
-  if FStartMinimized <> Val then
-  begin
-    FStartMinimized := Val;
-    StartMinimizedCheckBox.Checked := Val;
-    Ini.WriteBool(DefaultConfigIniSection, 'StartMinimized', Val);
-  end;
-end;
-
-procedure TMainForm.SetAutoRun(const Val: Boolean);
-begin
-  if FAutoRun <> Val then
-  begin
-    FAutoRun := Val;
-    AutoRunCheckBox.Checked := Val;
-    uUtils.AutoRun(Application.ExeName, 'Auto Screenshot', Val);
-    Ini.WriteBool(DefaultConfigIniSection, 'AutoRun', Val);
-  end;
-end;
-
-procedure TMainForm.SetGrayscale(const Val: Boolean);
-begin
-  if FGrayscale <> Val then
-  begin
-    FGrayscale := Val;
-    GrayscaleCheckBox.Checked := Val;
-    Ini.WriteBool(DefaultConfigIniSection, 'Grayscale', Val);
-    if Grabber <> nil then
-      Grabber.IsGrayscale := Val;
-  end;
-end;
-
-procedure TMainForm.SetPostCommand(ACmd: String);
-begin
-  PostCmdEdit.Text := ACmd;
-end;
-
-function TMainForm.GetPostCommand: String;
-begin
-  Result := PostCmdEdit.Text;
-end;
-
-function TMainForm.GetMonitorWithCursor: Integer;
-var
-  MonitorRect: TRect;
-begin
-  Screen.UpdateMonitors;
-  for Result := 0 to Screen.MonitorCount - 1 do
-  begin
-    with Screen.Monitors[Result] do
-    begin
-      MonitorRect.SetLocation(Left, Top);
-      MonitorRect.Width:=Width;
-      MonitorRect.Height:=Height;
-    end;
-
-    if MonitorRect.Contains(Mouse.CursorPos) then
-      Exit;
-  end;
-
-  Exit(NoMonitorId);
-end;
-
-function TMainForm.GetAutoCheckForUpdates: Boolean;
-begin
-  Result := AutoCheckForUpdatesMenuItem.Checked;
-end;
-
-procedure TMainForm.SetAutoCheckForUpdates(AVal: Boolean);
-begin
-  Ini.WriteBool(DefaultConfigIniSection, 'AutoCheckForUpdates', AVal);
-  AutoCheckForUpdatesMenuItem.Checked := AVal;
-end;
-
-procedure TMainForm.SetStartAutoCaptureHotKey(AHotKey: THotKey);
-begin
-  SetHotKey('StartAutoCapture', AHotKey);
-end;
-
-procedure TMainForm.SetStopAutoCaptureHotKey(AHotKey: THotKey);
-begin
-  SetHotKey('StopAutoCapture', AHotKey);
-end;
-
-procedure TMainForm.SetSingleCaptureHotKey(AHotKey: THotKey);
-begin
-  SetHotKey('SingleCapture', AHotKey);
-end;
-
-procedure TMainForm.SetHotKey(AHotKeyId: String; AHotKey: THotKey);
-begin
-  KeyHook.RegisterKey(AHotKeyId, AHotKey);
-  Ini.WriteHotKey(HotKeysIniSection, AHotKeyId, AHotKey);
-end;
-
-procedure TMainForm.SetCompressionLevel(ALevel: Tcompressionlevel);
-begin
-  CompressionLevelComboBox.ItemIndex := Ord(ALevel);
-  Ini.WriteInteger(DefaultConfigIniSection, 'Compression', Ord(ALevel));
-  if Grabber <> nil then
-    Grabber.CompressionLevel := CompressionLevel;
-end;
-
-function TMainForm.GetCompressionLevel: Tcompressionlevel;
-begin
-  Result := Tcompressionlevel(CompressionLevelComboBox.ItemIndex);
-end;
-
-procedure TMainForm.UpdateFormAutoSize;
-begin
-  //{$IfDef Linux}
-  {$IfDef LCLGTK2}
-  // Bugfix for Linux only
-  // https://forum.lazarus.freepascal.org/index.php/topic,62600.0.html
-  // ToDo: Try to find better solution
-  AutoSize := not AutoSize;
-  AutoSize := not AutoSize;
-  {$EndIf}
-end;
-
-procedure TMainForm.PlaySound(const AFileName: String);
-var
-  SoundDir: String;
-begin
-  if not Sounds then
-    Exit;
-
-  with SoundPlayer do
-  begin
-    {$IfDef Windows}
-    SoundDir := ConcatPaths([ProgramDirectory, 'sounds']);
-    {$EndIf}
-    {$IfDef Linux}
-    if IsPortable then
-      SoundDir := ConcatPaths([ProgramDirectory, 'sounds'])
-    else
-      SoundDir := '/usr/share/autoscreenshot/sounds/';
-    {$EndIf}
-
-    SoundFile := ConcatPaths([SoundDir, AFileName]);
-    Execute;
-  end;
-end;
-
-procedure TMainForm.SetSounds(AEnabled: Boolean);
-begin
-  PlaySoundsCheckBox.Checked := AEnabled;
-  Ini.WriteBool(DefaultConfigIniSection, 'Sounds', AEnabled);
-end;
-
-function TMainForm.GetSounds: Boolean;
-begin
-  Result := PlaySoundsCheckBox.Checked;
-end;
-
-procedure TMainForm.SetMinimizeInsteadOfClose(AEnabled: Boolean);
-begin
-  MinimizeInsteadOfCloseCheckBox.Checked := AEnabled;
-  Ini.WriteBool(DefaultConfigIniSection, 'MinimizeInsteadOfClose', AEnabled);
-end;
-
-function TMainForm.GetMinimizeInsteadOfClose: Boolean;
-begin
-  Result := MinimizeInsteadOfCloseCheckBox.Checked;
-end;
-
-function TMainForm.ConfirmExit: Boolean;
-var
-  YesStr, NoStr: String;
-begin
-  YesStr := Localizer.I18N('Yes');
-  NoStr  := Localizer.I18N('No');
-  Result := QuestionDlg('Auto Screenshot', Localizer.I18N('ExitConfirmation'), mtConfirmation,
-            [mrYes, YesStr, mrNo, NoStr, 'IsDefault'],
-            0) = mrYes;
-end;
-
-procedure TMainForm.SetEnableLogging(AEnabled: boolean);
-begin
-  ini.WriteBool(DefaultConfigIniSection,'Logging',AEnabled);
-  EnableLoggingMenuItem.Checked:=AEnabled;
-end;
-
-function TMainForm.GetEnabledLogging: boolean;
-begin
-  Result:=EnableLoggingMenuItem.Checked;
-end;
-
-procedure TMainForm.OnHotKeyEvent(const AHotKeyId: String);
-begin
-  case AHotKeyId of
-    'StartAutoCapture': IsTimerEnabled := True;
-    'StopAutoCapture':  IsTimerEnabled := False;
-    'SingleCapture':    MakeScreenshot;
-    'ShowWindow':       begin RestoreFromTray; Application.BringToFront; end;
-    (*{$IFOPT D+}
-    else ShowMessage(Format('Unknown hotkey event! (wparam=%d, lparam=%d)', [AMsg.wParam, AMsg.lParam]));
-    {$ENDIF}*)
-  end;
-end;
-
-procedure TMainForm.OnDebugLnEvent(Sender: TObject; S: string;
-  var Handled: Boolean);
-var
-  Callback: {TLazLoggerWriteEvent} procedure(Sender: TObject; S: string; var Handled: Boolean) of object;
-  IndentLevel: Integer;
-begin
-  S := Format('[%s]   %s', [FormatDateTime('hh:nn:ss.zzz', Now()), S]);
-  Callback := DebugLogger.OnDebugLn;
-  IndentLevel := DebugLogger.NestLvlIndent;
-  DebugLogger.OnDebugLn := Nil;
-  DebugLogger.NestLvlIndent := 0;
-  try
-    DebugLn(S);
-  finally
-    DebugLogger.NestLvlIndent := IndentLevel;
-    DebugLogger.OnDebugLn := Callback;
-  end;
-  Handled := True;
-end;
-
-function TMainForm.OnHotKeysSaving(ASender: TObject; out AErrorMsg: string): Boolean;
-var
-  HasErrors: Boolean = False;
-  HotKeysForm: THotKeysForm;
-begin
-  HotKeysForm := THotKeysForm(ASender);
-
-  try
-    SetStartAutoCaptureHotKey(HotKeysForm.StartAutoCaptureKey);
-    HotKeysForm.StartAutoCaptureMarked := False;
-  except
-    HasErrors := True;
-    HotKeysForm.StartAutoCaptureMarked := True;
-  end;
-
-  try
-    SetStopAutoCaptureHotKey(HotKeysForm.StopAutoCaptureKey);
-    HotKeysForm.StopAutoCaptureMarked := False;
-  except
-    HasErrors := True;
-    HotKeysForm.StopAutoCaptureMarked := True;
-  end;
-
-  try
-    SetSingleCaptureHotKey(HotKeysForm.SingleCaptureKey);
-    HotKeysForm.SingleCaptureMarked := False;
-  except
-    HasErrors := True;
-    HotKeysForm.SingleCaptureMarked := True;
-  end;
-
-  if HasErrors then
-    AErrorMsg := Localizer.I18N('HotKeyOccupied')
-  else
-    AErrorMsg := '';
-
-  Result := not HasErrors;
-end;
-
-procedure TMainForm.OnScreenshotCleanerChanged;
-begin
-  OldScreenshotCleanerEnabledCheckBox.Checked := OldScreenshotCleaner.Active;
-  Ini.WriteBool(DefaultConfigIniSection, 'OldScreenshotCleanerEnabled', OldScreenshotCleaner.Active);
-
-  OldScreenshotCleanerMaxAgeValueSpinEdit.Value := OldScreenshotCleaner.MaxAge.Val;
-  OldScreenshotCleanerMaxAgeUnitComboBox.ItemIndex := Ord(OldScreenshotCleaner.MaxAge.&Unit);
-  Ini.WriteString(DefaultConfigIniSection, 'OldScreenshotCleanerMaxAge', String(OldScreenshotCleaner.MaxAge));
-
-  OldScreenshotCleanerMaxAgeValueSpinEdit.Enabled := OldScreenshotCleaner.Active;
-  OldScreenshotCleanerMaxAgeUnitComboBox.Enabled := OldScreenshotCleaner.Active;
-end;
-
-{$IfDef Linux}
-procedure TMainForm.OnScreenConfigurationChanged(const AEvent: TXEvent);
-begin
-  //if AEvent._type = 89 {?} then
-    UpdateMonitorList;
-  //end;
-end;
-{$EndIf}
-
-procedure TMainForm.SetPreCommand(ACmd: String);
-begin
-  PreCmdEdit.Text := ACmd;
-end;
-
-function TMainForm.GetPreCommand: String;
-begin
-  Result := PreCmdEdit.Text;
-end;
-
-procedure TMainForm.SetSkipSimilar(AVal: Boolean);
-begin
-  SkipSimilarCheckBox.Checked := AVal;
-  ini.WriteBool(DefaultConfigIniSection, 'SkipSimilar' ,AVal);
-
-  Label1.Enabled := AVal;
-  SkipSimilarMatchPercentSpinEdit.Enabled := AVal;
-  Label2.Enabled := AVal;
-end;
-
-function TMainForm.GetSkipSimilar: Boolean;
-begin
-  Result := SkipSimilarCheckBox.Checked;
-end;
-
-procedure TMainForm.SetSkipSimilarMatchPercent(AVal: Integer);
-begin
-  SkipSimilarMatchPercentSpinEdit.Value := AVal;
-  ini.WriteInteger(DefaultConfigIniSection, 'SkipSimilarMatchPercent', AVal);
-end;
-
-function TMainForm.GetSkipSimilarMatchPercent: Integer;
-begin
-  Result := SkipSimilarMatchPercentSpinEdit.Value;
-end;
-
-procedure TMainForm.UpdateStatusBarAndTrayIconText;
-var
-  Sec: Integer;
-begin
-  TrayIcon.Hint := Application.Title;
-
-  if not IsTimerEnabled then
-  begin
-    StatusBar1.SimpleText:='';
-    TrayIcon.Hint := Format('%s - %s', [Application.Title, Localizer.I18N('AutoCaptureDisabled')]);
-  end
-  else
-  begin
-    if StopWhenInactive and not (AutoCaptureTimer.Interval > UserIdleTime) then
-    begin  // user inactive
-      StatusBar1.SimpleText := Localizer.I18N('AutoCapturePaused');
-    end
-    else   // show next run time
-    begin
-      Sec := AutoCaptureTimer.SecondsBeforeNextExecution;
-      if Sec < 0 then
-        StatusBar1.SimpleText := ''
+      end
       else
       begin
-        //Text := Format('Next shot after %d seconds', [Sec]);
-        StatusBar1.SimpleText := Format(Localizer.I18N('TimeToNextShot'), [SecondsToHMS(Sec)]);
-        TrayIcon.Hint := Format('%s - %s', [Application.Title, StatusBar1.SimpleText]);
+        AddEmptyCtrl;
       end;
+
+      // Payment method name
+      with TLabel.Create(PaymentMethodsPanel) do
+      begin
+        Caption := Entries[I].Title {+ ':'};
+        BorderSpacing.CellAlignVertical := ccaCenter;
+        //BorderSpacing.CellAlignHorizontal := ccaRightBottom;
+        Parent := PaymentMethodsPanel;
+      end;
+
+      // Payment link button
+      DonateUrl := Entries[I].Url;
+      if not DonateUrl.IsEmpty then
+      begin
+        with TBitBtn.Create(PaymentMethodsPanel) do
+        begin
+          OnClick := @OpenDonateUrl;
+          BorderSpacing.CellAlignVertical := ccaCenter;
+          Parent := PaymentMethodsPanel;
+          Name := 'OpenDonateUrlButton_' + IntToStr(I);
+          Caption:='';
+          LoadGlyphFromResourceName(HINSTANCE, '_EXTERNAL_LINK_ICON');
+          Hint:=Localizer.I18N('OpenPayLinkInBrowser');
+          ShowHint:=True;
+        end;
+      end
+      else
+      begin
+        AddEmptyCtrl;
+      end;
+
+      if not Entries[I].WalletID.IsEmpty then  // allowed to be empty
+      begin
+        // Wallet identifier
+        with TEdit.Create(PaymentMethodsPanel) do
+        begin
+          Width := 300;
+          Constraints.MinWidth := Width;
+          Text := Entries[I].WalletID;
+          ReadOnly := True;
+          BorderSpacing.CellAlignVertical := ccaCenter;
+          Parent := PaymentMethodsPanel;
+          BorderSpacing.Left := {16} 25;
+        end;
+
+        // Copy wallet identifier button
+        with TButton.Create(PaymentMethodsPanel) do
+        begin
+          Caption := Localizer.I18N('Copy');
+          OnClick := @CopyWalletToClipboard;
+          BorderSpacing.CellAlignVertical := ccaCenter;
+          Parent := PaymentMethodsPanel;
+        end;
+      end
+      else
+      begin
+        AddEmptyCtrl;
+        AddEmptyCtrl;
+      end;
+
+    end;
+  except
+    // No action needed there
+  end;
+end;
+
+procedure TDonateForm.FormDestroy(Sender: TObject);
+begin
+  SetLength(Entries, 0);
+end;
+
+procedure TDonateForm.FormShow(Sender: TObject);
+begin
+  if ComponentCount = 0 then
+  begin
+    // Open Donate url in web browser as fallback if something goes wrong
+    OpenWebPage;
+    Close;
+  end
+end;
+
+procedure TDonateForm.CopyWalletToClipboard(ASender: TObject);
+  function FindPrevComponent(AComponent: TComponent): TComponent;
+  begin
+    if not AComponent.HasParent then
+      Result := Nil
+    else
+    begin
+      if AComponent.ComponentIndex > 0 then
+        Result := AComponent.GetParentComponent.Components[AComponent.ComponentIndex - 1]
+      else
+        Result := Nil;
     end;
   end;
-end;
 
-procedure TMainForm.ShowNotificationInStatusBar(AMsg: string);
-begin
-  StatusBar1.SimpleText:=amsg;
-  AutoCaptureUpdaterTimer.Interval:=3000; // prevent immediately text rewrite by timer
-end;
-
-function TMainForm.LogFilePath: string;
-const
-LogFileName = 'log.txt';
-begin
-  if IsPortable then
-      Exit(ConcatPaths([ProgramDirectory, LogFileName]) )
-  else
-      Exit(ConcatPaths([GetAppConfigDir(False), LogFileName]));
-end;
-
-function TMainForm.CfgFilePath: string;
-const
-  CfgFileName='config.ini';
-begin
-  if IsPortable then
-      Exit(ConcatPaths([ProgramDirectory, CfgFileName]) )
-  else
-      Exit(ConcatPaths([GetAppConfigDir(False), CfgFileName]));
-end;
-
-{$IfDef Windows}
-procedure TMainForm.WMHotKey(var AMsg: TMessage);
 var
-  StrId: String = '';
+  Component: TEdit;
 begin
-  //ShowMessage(IntToStr(lParam));
-
-  try
-    StrId := KeyHook.IdToStrId(AMsg.wParam);
-  except
-  end;
-
-  OnHotKeyEvent(StrId);
+  Component := TEdit(FindPrevComponent(TComponent(ASender)));
+  Clipboard.AsText := Component.Text;
 end;
-{$EndIf}
 
-procedure TMainForm.SeqNumberDigitsCountSpinEditChange(Sender: TObject);
+procedure TDonateForm.LoadData();
+const
+  {$IFOPT D+}
+  ApiUrl = 'https://api.github.com/gists/f293c446c3f2e83900f5a1d7b5596755';
+  JsonFileName = 'test_wallets.json';
+  {$else}
+  ApiUrl = 'https://api.github.com/gists/6c79ab382865da9b598927194c52eb09';
+  JsonFileName = 'donate_wallets.json';
+  {$ENDIF}
+var
+  Http: TFPHTTPClient;
+  Json: TJSONData;
+  Str: String;
+  Enumerator: TBaseJSONEnumerator;
+  PaymentMethod, WalletID, IconBase64, DonateUrl: String;
+  I: Integer = 0;
 begin
-  if Ini = Nil then
-    Exit;
+  SetLength(Entries, 0);
 
+  Http := TFPHttpClient.Create(Nil);
   try
-    CounterDigits := SeqNumberDigitsCountSpinEdit.Value;
+    Http.AllowRedirect := True;
+    Http.AddHeader('Accept', 'application/vnd.github+json');
+    Http.AddHeader('User-Agent', 'Auto Screenshot');
+    Json := GetJSON(Http.Get(ApiUrl));
+    try
+      Str := TJSONObject(Json).Objects['files'].Objects[JsonFileName].Strings['content'];
+    finally
+      Json.Free;
+    end;
+
+    Json := GetJSON(Str);
+    try
+      Enumerator := TJSONObject(Json).GetEnumerator;
+      try
+        while Enumerator.MoveNext do
+        begin
+          with TJSONArray(Enumerator.Current.Value) do
+          begin
+            PaymentMethod := Items[0].AsString;
+            WalletID      := Items[1].AsString;
+            IconBase64 := '';
+            DonateUrl := '';
+            try
+              if Count > 2 then
+              begin
+                IconBase64 := TJSONObject(Items[2]).Get('icon', '');
+                DonateUrl  := TJSONObject(Items[2]).Get('payment_url', '');
+              end;
+            except
+            end;
+          end;
+
+          SetLength(Entries, Length(Entries) + 1); // +1 item
+          Entries[I].Title := PaymentMethod;
+          Entries[I].WalletID := WalletID;
+          Entries[I].IconBase64 := IconBase64;
+          Entries[I].Url := DonateUrl;
+
+          Inc(i);
+        end;
+      finally
+        Enumerator.Free;
+      end;
+    finally
+      Json.Free;
+    end;
+
   finally
+    Http.Free;
   end;
 end;
 
-procedure TMainForm.UniqueInstance1OtherInstance(Sender: TObject;
-  ParamCount: Integer; const Parameters: array of String);
+class procedure TDonateForm.OpenWebPage;
+var
+  Url: String;
 begin
-  RestoreFromTray;
+  {case Localizer.LanguageInfo.Code of
+    'fr':
+      Url := 'https://github.com/artem78/AutoScreenshot/blob/master/docs/README-fr.md#faire-un-don';
+    'ru', 'uk':
+      Url := 'https://github.com/artem78/AutoScreenshot/blob/master/docs/README-ru.md#%D0%B2%D0%BE%D0%B7%D0%BD%D0%B0%D0%B3%D1%80%D0%B0%D0%B4%D0%B8%D1%82%D1%8C-%D0%B0%D0%B2%D1%82%D0%BE%D1%80%D0%B0-%D0%BC%D0%B0%D1%82%D0%B5%D1%80%D0%B8%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE';
+    else
+      Url := 'https://github.com/artem78/AutoScreenshot/tree/master#donate';
+  end;}
+  Url := AddCustomParamsToUrl('https://artem78.github.io/AutoScreenshot/pages/donate.html');
+
+  OpenURL(Url);
 end;
 
-procedure TMainForm.UpdateCheckOnStartupTimerTimer(Sender: TObject);
+procedure TDonateForm.OpenDonateUrl(ASender: TObject);
+var
+  Url: string;
+  Idx: Integer = -1;
 begin
-      CheckForUpdates(True);
-  (Sender as TTimer).Enabled:=false;
-end;
-
-function TMainForm.GetEnableLogging: Boolean;
-begin
-  Result:=EnableLoggingMenuItem.Checked;
+  Idx := StrToInt(ExtractWord(2, (ASender as TComponent).Name, ['_']));
+  Url := Entries[Idx].Url;
+  OpenURL(Url);
 end;
 
 end.
+
